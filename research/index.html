@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>《伴侣视角》立项深度研究报告：用「宠物视角」帮饲主理解居家环境舒适度</title>
+<meta name="description" content="Team2《伴侣视角》立项深度研究报告：宠物视角 / 居家环境舒适度 / VR 机制评估">
+<script>
+(function(){
+  var t=null;
+  try{t=localStorage.getItem('dsh-report-theme')}catch(e){}
+  if(t!=='dark'&&t!=='light'){
+    t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';
+  }
+  document.documentElement.setAttribute('data-theme',t);
+})();
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --ink:#1b1f24; --ink-2:#4a5560; --ink-3:#7b8794;
+  --line:#e3e7ec; --accent:#0d7d72; --accent-2:#0a5f57; --accent-soft:#e6f4f2;
+  --warn-bg:#fff8e8; --warn-line:#e8c26a; --ok-bg:#eaf7ee; --ok-line:#7fc79a;
+  --tier1:#0d7d72; --tier2:#2563a8; --tier3:#b07d18; --tier4:#b4453a;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 8px 24px -12px rgba(16,24,40,.18);
+  --radius:14px;
+}
+html[data-theme="dark"]{
+  --bg:#12161b; --card:#1a2027; --ink:#e8edf2; --ink-2:#b3bfcb; --ink-3:#8492a1;
+  --line:#2b3540; --accent:#43c9b8; --accent-2:#7fe0d3; --accent-soft:#16302e;
+  --warn-bg:#2c2418; --warn-line:#7a6224; --ok-bg:#16291c; --ok-line:#2f6b45;
+  --tier1:#43c9b8; --tier2:#7aa9e6; --tier3:#dfb45e; --tier4:#e0857a;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",sans-serif;
+  font-size:16px; line-height:1.8; -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));z-index:100;transition:width .1s linear}
+.topbar{
+  position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;
+  padding:10px 20px;background:color-mix(in srgb,var(--card) 88%,transparent);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);
+}
+.brand{font-weight:700;letter-spacing:.02em;font-size:14px;color:var(--ink-2);flex:1}
+.actions{display:flex;gap:8px}
+.actions button{
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:9px;cursor:pointer;
+  border:1px solid var(--line);background:var(--card);color:var(--ink-2);
+  transition:.15s;
+}
+.actions button:hover{border-color:var(--accent);color:var(--accent)}
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:32px;max-width:1400px;margin:0 auto;padding:28px 24px 96px}
+.sidebar{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 88px);overflow-y:auto;padding-right:6px}
+.sidebar h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3);margin:0 0 12px}
+.sidebar ol{list-style:none;margin:0;padding:0;font-size:13.5px;line-height:1.55}
+.sidebar li{margin:0 0 3px}
+.sidebar li.lvl3{padding-left:14px;font-size:12.5px}
+.sidebar a{color:var(--ink-2);text-decoration:none;display:block;padding:5px 10px;border-radius:8px;border-left:2px solid transparent}
+.sidebar a:hover{background:var(--accent-soft);color:var(--accent-2)}
+.sidebar a.active{background:var(--accent-soft);color:var(--accent-2);border-left-color:var(--accent);font-weight:600}
+main{min-width:0}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:32px 34px;box-shadow:var(--shadow);margin-bottom:26px}
+.hero .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:12px}
+.hero h1{font-size:clamp(22px,2.5vw,32px);line-height:1.35;margin:0 0 20px;letter-spacing:-.01em}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.chip{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 13px;font-size:13px;line-height:1.5;max-width:100%}
+.chip .k{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);margin-bottom:2px}
+.chip .v{color:var(--ink);font-weight:600}
+.meter{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.meter .label{font-size:13px;color:var(--ink-3)}
+.meter .bar{flex:1;min-width:180px;height:9px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.meter .fill{height:100%;width:80%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:99px}
+.meter .val{font-weight:800;font-size:18px;color:var(--accent)}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px 34px;box-shadow:var(--shadow);margin-bottom:24px}
+h2{font-size:22px;line-height:1.4;margin:0 0 20px;padding-bottom:14px;border-bottom:2px solid var(--accent-soft);letter-spacing:-.01em}
+h3{font-size:17.5px;line-height:1.5;margin:32px 0 12px;color:var(--accent-2)}
+h4,h5,h6{font-size:15.5px;margin:24px 0 10px}
+p{margin:0 0 15px;color:var(--ink)}
+strong{font-weight:700;color:var(--ink)}
+em{font-style:italic;color:var(--ink-2)}
+a{color:var(--accent-2);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent);word-break:break-word}
+a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+ul,ol{margin:0 0 16px;padding-left:24px}
+li{margin:0 0 8px}
+li.warn{background:var(--warn-bg);border-left:3px solid var(--warn-line);border-radius:0 8px 8px 0;padding:10px 14px;list-style-position:inside;margin-left:-24px;padding-left:22px}
+li.ok{background:var(--ok-bg);border-left:3px solid var(--ok-line);border-radius:0 8px 8px 0;padding:10px 14px;list-style-position:inside;margin-left:-24px;padding-left:22px}
+blockquote{margin:18px 0;padding:14px 20px;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-2);font-style:normal}
+blockquote p:last-child{margin-bottom:0}
+hr{border:0;border-top:1px dashed var(--line);margin:26px 0}
+.table-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:11px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.65;min-width:560px}
+th,td{padding:11px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{background:var(--bg);font-weight:700;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);position:sticky;top:0;z-index:1}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--bg) 55%,transparent)}
+tbody tr:hover{background:var(--accent-soft)}
+tbody tr:last-child td{border-bottom:0}
+.tier{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;border:1px solid}
+.tier-1{color:var(--tier1);border-color:var(--tier1);background:color-mix(in srgb,var(--tier1) 12%,transparent)}
+.tier-2{color:var(--tier2);border-color:var(--tier2);background:color-mix(in srgb,var(--tier2) 12%,transparent)}
+.tier-3{color:var(--tier3);border-color:var(--tier3);background:color-mix(in srgb,var(--tier3) 12%,transparent)}
+.tier-4{color:var(--tier4);border-color:var(--tier4);background:color-mix(in srgb,var(--tier4) 12%,transparent)}
+.totop{position:fixed;right:24px;bottom:24px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink-2);font-size:18px;cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.2s;z-index:60}
+.totop.show{opacity:1;pointer-events:auto}
+.totop:hover{color:var(--accent);border-color:var(--accent)}
+footer{max-width:1400px;margin:0 auto;padding:0 24px 60px;color:var(--ink-3);font-size:13px}
+@media(max-width:1040px){
+  .layout{grid-template-columns:1fr;gap:20px;padding:20px 16px 80px}
+  .sidebar{position:static;max-height:none;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:18px 20px}
+  section.card,.hero{padding:22px 20px}
+  table{min-width:520px}
+}
+@media print{
+  @page{size:A4;margin:14mm}
+  :root{--bg:#fff;--card:#fff;--shadow:none}
+  .topbar,.sidebar,.totop,#progress,.actions{display:none!important}
+  .layout{display:block;padding:0;max-width:none}
+  section.card,.hero{border:0;box-shadow:none;padding:0;margin:0 0 18px;break-inside:auto}
+  h2{break-after:avoid;border-bottom:1px solid #ccc}
+  h3{break-after:avoid}
+  table{font-size:9.5pt;min-width:0}
+  tr,img{break-inside:avoid}
+  a{color:#000;border:0}
+  /* 正文里的引用展开成完整 URL，便于纸质归档核对 */
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:7.5pt;color:#555;word-break:break-all}
+  /* 但表格里的链接本身已经是 URL 文本，再展开就会重复打印一遍 */
+  td a[href^="http"]::after,th a[href^="http"]::after{content:""}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header class="topbar">
+  <div class="brand">深度研究报告 · Deep Research Dossier</div>
+  <div class="actions">
+    <button id="themeBtn" type="button">🌙 深色</button>
+    <button type="button" onclick="window.print()">🖨 打印 / 存 PDF</button>
+  </div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav aria-label="目录">
+      <h2>目录</h2>
+      <ol><li class="lvl2"><a href="#执行摘要-executive-summary">执行摘要 Executive Summary</a></li>
+<li class="lvl2"><a href="#关键发现-key-findings">关键发现 Key Findings</a></li>
+<li class="lvl2"><a href="#详细分析-detailed-analysis">详细分析 Detailed Analysis</a></li>
+<li class="lvl3"><a href="#子问题-1-需求真实性-饲主-看不懂宠物-的痛点有多普遍-多强">子问题 1：需求真实性——饲主「看不懂宠物」的痛点有多普遍、多强？</a></li>
+<li class="lvl3"><a href="#子问题-2-科学依据-猫狗感官与-环境舒适度-中-哪些有据可依-哪些是拟人化过度">子问题 2：科学依据——猫狗感官与「环境舒适度」中，哪些有据可依、哪些是拟人化过度？</a></li>
+<li class="lvl3"><a href="#子问题-3-竞品与差异化-谁做过-做到什么程度-空位在哪">子问题 3：竞品与差异化——谁做过、做到什么程度、空位在哪？</a></li>
+<li class="lvl3"><a href="#子问题-4-三天工程可行性-什么能做出来-什么做不出来">子问题 4：三天工程可行性——什么能做出来，什么做不出来？</a></li>
+<li class="lvl3"><a href="#子问题-5-效果验证-怎么证明-看过之后饲主真的更理解宠物">子问题 5：效果验证——怎么证明「看过之后饲主真的更理解宠物」？</a></li>
+<li class="lvl3"><a href="#子问题-6-风险与差异点">子问题 6：风险与差异点</a></li>
+<li class="lvl2"><a href="#对比-comparison">对比 Comparison</a></li>
+<li class="lvl3"><a href="#表-1-技术路线对比-三天交付视角">表 1：技术路线对比（三天交付视角）</a></li>
+<li class="lvl3"><a href="#表-2-竞品与空位">表 2：竞品与空位</a></li>
+<li class="lvl2"><a href="#矛盾与分歧-contradictions-debates">矛盾与分歧 Contradictions &amp; Debates</a></li>
+<li class="lvl2"><a href="#不确定性与缺口-uncertainties-gaps">不确定性与缺口 Uncertainties &amp; Gaps</a></li>
+<li class="lvl2"><a href="#建议-recommendations">建议 Recommendations</a></li>
+<li class="lvl3"><a href="#主要建议-primary-recommendation">主要建议 Primary Recommendation</a></li>
+<li class="lvl3"><a href="#备选方案-alternative">备选方案 Alternative</a></li>
+<li class="lvl3"><a href="#不建议-not-recommended">不建议 Not Recommended</a></li>
+<li class="lvl2"><a href="#方法-methodology">方法 Methodology</a></li>
+<li class="lvl2"><a href="#来源-sources">来源 Sources</a></li></ol>
+    </nav>
+  </aside>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">立项深度研究</div>
+      <h1>《伴侣视角》立项深度研究报告：用「宠物视角」帮饲主理解居家环境舒适度</h1>
+      <div class="chips"><div class="chip"><span class="k">日期</span><span class="v">2026-10-02</span></div>
+<div class="chip"><span class="k">Depth</span><span class="v">exhaustive（计划档位；实际检索量因并发限制低于档位上限，见「方法与限制」）</span></div>
+<div class="chip"><span class="k">Confidence</span><span class="v">80%（第 2 轮补漏后由 74% 上调，见「方法与限制」）</span></div>
+<div class="chip"><span class="k">Sources</span><span class="v">35 个来源；19 次 <code>web_fetch</code> 尝试（其中 11 次取得有效全文）；6 个 PDF 下载后本地提取；若干页面经本地下载＋正则抽取；1 次 Semantic Scholar 引文图谱查询</span></div>
+<div class="chip"><span class="k">研究对象</span><span class="v">Vibe Coding Camp · Team 2 立项《伴侣视角》——给猫狗饲主，在宠物日常生活环境中，理解／感知宠物视角，通过 VR 提供价值</span></div>
+<div class="chip"><span class="k">重心（按委托方指定）</span><span class="v">科学依据 · 三天工程可行性 · 竞品与差异化</span></div></div>
+      <div class="meter">
+        <span class="label">综合置信度</span>
+        <span class="bar"><span class="fill"></span></span>
+        <span class="val">80%</span>
+      </div>
+    </section>
+
+<section class="card">
+<h2 id="执行摘要-executive-summary">执行摘要 Executive Summary</h2>
+<p><strong>这个方向值得做，但「VR」和「代入宠物视角」这两件事必须拆开重新论证：前者是三天内最可能拖垮交付的约束，后者才是真正的差异化来源。</strong> 需求侧证据是双重的：荷兰乌得勒支大学 2026 年发表于 PLOS ONE 的研究（n=647）证明，<strong>养犬者识别宠物「细微疼痛信号」的能力并不优于非养犬者</strong>，且系统性把「转头避开／僵住」误读为应激而非疼痛 <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">PLOS ONE</a>；英国 PDSA 与 YouGov 连续 14 年的全国代表性调查则给出同一结论结构的第二份证据——<strong>95% 的猫主人自认已了解如何为猫提供合适环境，但 42% 的英国猫与另一只猫同住、近 180 万只猫可能因同居伙伴而应激</strong> <a href="https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf" target="_blank" rel="noopener noreferrer">PDSA PAW 2024</a>。而 2026 年初一款仅两人团队开发的「猫咪语言」App 一度登顶 iOS 付费榜，说明「想更懂宠物」已经产生真实付费行为 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报/腾讯新闻</a>。机制侧同样有同行评议背书：东南大学 iStrayPaws 在 VRST 2024 证明<strong>第一人称动物视角 VR 能显著提升状态共情与特质共情</strong> <a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">ACM VRST 2024</a>——但它也同时构成最直接的先行工作，对象是流浪动物而非家养宠物；<strong>更紧迫的是，通过引文图谱可见 2025–2026 年已涌现一批「非人类具身 VR」作品（在 VR 中具身狗的耳朵、用鸟的感知做可穿戴、具身蜘蛛等），这条赛道正在被快速填充，而不只是一篇论文。</strong>最大的可行性风险来自一条硬事实：<strong>WebXR 在 iOS Safari 上至今不受支持</strong>（caniuse 实测：Safari on iOS 3.2–27.2 全版本 Not supported）<a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">caniuse</a>，而中国宠主中 00 后占 26.3%、90 后占 42.7% <a href="https://business.cctv.com/2026/01/05/ARTIdmv2AWmVeRVodaZYLOvQ260105.shtml" target="_blank" rel="noopener noreferrer">央视网/派读白皮书</a>，主力设备是手机而非头显。<strong>最重要的一条保留意见：</strong> 目前没有任何一项研究直接测量过「让饲主以宠物视角观察自己的家」是否真能提升其后续的环境改善行为——这是本报告置信度最低的环节（58%），也是三天 demo 最该去补的空白。</p>
+<hr>
+</section>
+<section class="card">
+<h2 id="关键发现-key-findings">关键发现 Key Findings</h2>
+<ol>
+<li><strong>需求被同行评议量化了，而且比团队假设的更尖锐。</strong> 问题不是「饲主不想懂」，而是「饲主以为自己懂、实际读不准细微信号」——PLOS ONE 2026 的 n=647 研究证实养犬者对细微疼痛信号识别率与非养犬者<strong>无显著差异</strong>，而对明显信号（如抬腿）识别率达 90% <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">PLOS ONE</a>。</li>
+<li><strong>英国的全国代表性调查给出了同一个结论结构的第二份独立证据，而且数字更刺眼。</strong> PDSA PAW 2024（与 YouGov 合作、连续 14 年的全国代表性调查）显示：<strong>95% 的猫主人自认「已了解如何为猫提供合适的环境」，但现实中 42% 的英国宠物猫与另一只猫同住，其中 17%（约合 180 万只猫）与「并不总能相处」的猫同住</strong>；多猫家庭的猫出现至少一种可能提示应激的行为的比例为 <strong>55%</strong>，独居猫为 <strong>48%</strong>，与相处不来的猫同住者高达 <strong>67%</strong> <a href="https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf" target="_blank" rel="noopener noreferrer">PDSA PAW 2024</a>。</li>
+<li><strong>「更懂宠物」已经被验证有人愿意付钱。</strong> 2026 年初「猫咪语言」App 一度登顶 iOS App Store 付费榜榜首，开发团队仅两人；同类猫语翻译 App 订阅价 12 元/月与 68 元/月 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报/腾讯新闻</a>。</li>
+<li><strong>但最热的那条解法（声音翻译）已被专业行为咨询师公开否定。</strong> 拥有十年、超 3000 例猫行为矫正经验的咨询师孙文指出：猫咪紧张焦虑的发声与发情／回应主人的声音<strong>十分相似</strong>，标准化翻译「极易造成南辕北辙的危险误判」；「人语转猫语」可能让猫产生困惑、紧张甚至应激并攻击主人 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">同上</a>。</li>
+<li><strong>专业兽医指南给出了「环境舒适度」的可操作定义，可信度远高于感官模拟。</strong> AAFP 2021 猫科老年照护指南明确以「健康猫科环境的五大支柱」为框架，并把关键资源具化为<strong>猫砂盆、食盆、饮水、睡窝、抓挠面、躲藏空间、三维立体空间，且需多处分布</strong> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/" target="_blank" rel="noopener noreferrer">JFMS/PMC</a>。</li>
+<li><strong>饲主「意识不到渐变」是兽医临床的公认痛点，且专业人士认为饲主可被训练。</strong> 同一指南写道「许多客户在未被问到引导性问题前，可能并未意识到逐渐发生的变化」，但同时指出「在适当指导下，客户能学会识别猫正常活动与行为模式中提示疼痛的改变」<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/" target="_blank" rel="noopener noreferrer">同上</a>。</li>
+<li><strong>「第一人称动物视角」的机制已被同行评议验证有效，但同时已被占位。</strong> iStrayPaws（VRST 2024，东南大学）用第一人称 VR 呈现流浪动物的困境，用户研究显示 VRPT 组在状态共情与特质共情上均较传统方法显著提升 <a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">ACM</a>。</li>
+<li><strong>更紧迫的是：「非人类具身 VR」在 2025–2026 已经从单篇论文变成一个活跃研究前沿，赛道正在被快速填满。</strong> 通过 Semantic Scholar 引文图谱追溯 iStrayPaws 的施引文献，可见同期一批直接相关的作品：<strong>《Having Dog Ears "for Real"：Effects of Active and Passive Haptics on Embodying Non-Human Body Parts in VR》</strong>（2026, arXiv）、<strong>《Seeing with a Bird's Perception：Designing a Wearable Experience to Reorient Attention to Everyday Nature》</strong>（CHI EA 2026）、<strong>《Investigating How to Control Virtual Spiders While Embodying Them in Virtual Reality》</strong>（VRST 2025）、<strong>《Me, the Elephant, and the Virtual World》</strong>（PACM HCI 2025）、<strong>《ZooWear：Animal-Inspired Head-Mounted Haptic Interfaces》</strong>（2025）等 <a href="https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3641825.3687729/citations" target="_blank" rel="noopener noreferrer">Semantic Scholar 引文图谱</a>。这意味着「动物视角／非人类具身」不再是无人区，<strong>立项的时间窗口比团队预想的窄</strong>。</li>
+<li><strong>「宠物视角」在商业上已有轻度先例，但只做到「贴地拍摄」，没做到「感官模拟」。</strong> Enabot 宠物陪伴机器人以贴地视角拍摄，用户把这种镜头视角称为「老鼠视角」，在短视频平台非常受欢迎；该公司全球用户已突破 100 万、覆盖 160 多国 <a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网/人民日报海外版</a>。</li>
+<li><strong>三天内 VR 头显路线的最大障碍是浏览器支持，而不是美术工作量。</strong> caniuse 显示 WebXR Device API 在 <strong>Safari on iOS 全版本为 Not supported</strong>（3.2–27.2），桌面 Safari 13–27 为「默认禁用」；Chrome 79–154 为「部分支持」<a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">caniuse</a>。</li>
+<li><strong>头显的性能门槛有明确量化标准，且「掉帧」比「平均帧率低」更致命。</strong> VR 的运动到光子延迟通常为 20–30 ms，90 fps 约合每帧 11 ms，已是 Quest 3／PSVR2 的基线；降到 72 fps 就足以在长时间使用中诱发不适 <a href="https://www.lavapi.com/blog/vr-performance-budgets-90fps" target="_blank" rel="noopener noreferrer">LavaPi</a>。</li>
+<li><strong>宠物的感官世界与人类差异巨大，这既是内容素材也是拟人化风险源。</strong> 犬为二色视觉（蓝紫＋红，无法区分绿色）；猫总视野约 200°（其中双眼视野 140°）；人类引发视觉所需的阈值光强约为猫的 6 倍；犬猫锥细胞闪烁融合频率为 70–80 Hz，而人类约 60 Hz——<strong>也就是说，人眼看着稳定不闪的灯，宠物可能看着在闪</strong> <a href="http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf" target="_blank" rel="noopener noreferrer">VetScienceWeek</a>。</li>
+<li><strong>听觉差异是可以直接做进产品的最强「视角落差」证据。</strong> 一项 2023 年综述整理的听阈数据：人类 31 Hz–8 kHz，犬 67 Hz–45 kHz，猫 58 Hz–75 kHz <a href="https://link.springer.com/article/10.1186/s42826-023-00182-3/tables/2" target="_blank" rel="noopener noreferrer">Laboratory Animal Research</a>。</li>
+<li><strong>拟人化在动物行为学界是真实争议，不是可以忽略的学术洁癖。</strong> Burghardt 提出的「批判性拟人化」（critical anthropomorphism, 1991）至今仍被讨论，Nature 曾刊文《拟人化的危险》警告其回潮 <a href="https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf" target="_blank" rel="noopener noreferrer">Anthropomorphism Revisited</a>。</li>
+<li><strong>中国宠物市场足够大但「理解宠物」尚不是消费类目。</strong> 2025 年城镇犬猫消费市场 3126 亿元（+4.1%），但消费结构为食品 53.7%、医疗 27.6%、用品 12.2%、服务 6.5%，没有「理解／共情」这一项 <a href="https://business.cctv.com/2026/01/05/ARTIdmv2AWmVeRVodaZYLOvQ260105.shtml" target="_blank" rel="noopener noreferrer">央视网</a>。</li>
+<li><strong>行业内已明确把「理解宠物」当作下一代方向。</strong> 索未来科技集团董事长刘聪凯公开表示，「未来宠物智能产品还将融入跨物种'语言'翻译功能……帮助人类更好理解宠物的'语言'」<a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网</a>。</li>
+</ol>
+<hr>
+</section>
+<section class="card">
+<h2 id="详细分析-detailed-analysis">详细分析 Detailed Analysis</h2>
+<h3 id="子问题-1-需求真实性-饲主-看不懂宠物-的痛点有多普遍-多强">子问题 1：需求真实性——饲主「看不懂宠物」的痛点有多普遍、多强？</h3>
+<p><strong>结论：痛点真实、被量化，而且痛点结构对「视觉化理解」比对「声音翻译」更友好。</strong></p>
+<p>这个问题在本项目里的价值，不在于证明「宠物市场很大」——那是显然的，2025 年城镇犬猫消费已达 3126 亿元、单只犬年均消费 3006 元 <a href="https://business.cctv.com/2026/01/05/ARTIdmv2AWmVeRVodaZYLOvQ260105.shtml" target="_blank" rel="noopener noreferrer">央视网</a>——而在于证明<strong>痛点存在且形式是「认知盲区」而非「缺乏工具」</strong>。</p>
+<p>PLOS ONE 2026 那项研究的设计恰好能回答这一点。研究者向 647 名参与者（530 名养犬者、117 名非养犬者）出示十七个犬类行为信号与三个犬只行为案例，请其评估「该行为与疼痛相关的可能性」。结果是<strong>第一个假设被证实：养犬者识别细微疼痛信号的能力并不优于非养犬者</strong>。对明显信号（与运动能力相关的疼痛，如持续抬起后腿）几乎所有参与者都能识别——620 个疼痛归因中有 555 个（90%）；但对<strong>细微信号</strong>案例（如黏人跟随家人、夜间躁动），养犬者与非养犬者之间<strong>没有显著差异</strong> <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">PLOS ONE</a>。</p>
+<p>研究者的解释直指产品机会：「这可能表明养犬者识别细微疼痛信号时更不容易。养犬者可能更多把'转头或转身避开'与'僵住'识别为应激／恐惧信号，而不是疼痛信号。」更关键的是第二个发现：<strong>有过疼痛经历的饲主识别率显著更高</strong>（647 人中 363 人报告曾有个人疼痛经历），而<strong>养过患病犬只的饲主</strong>对细微信号的评分也显著更高——研究者据此认为「经验很重要」，并引用既有研究指出「一项针对若干疼痛信号的教育干预（使用改编的兽医犬疼痛工具）提升了养犬者解读可能提示疼痛的行为的能力」<a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">同上</a>。</p>
+<p><strong>这两点合起来，正好是本项目最有力的立项论据：</strong> 饲主的短板是<strong>经验缺口</strong>，而不是态度问题；既然「经验」能补上这个缺口，那么<strong>用技术手段人工制造经验</strong>（让人体验一次宠物的感官与处境）在逻辑上是成立的干预路径。这与 iStrayPaws 把「共情」当作可干预变量的思路完全一致（见子问题 3）。</p>
+<p><strong>英国的数据用另一条路径得到了同一个结论结构，而且更加反讽。</strong> PDSA 与 YouGov 合作、已连续 14 年的全国代表性调查（PAW Report 2024，方法论已发表于同行评议期刊 <em>Veterinary Record</em>）给出了两组并列的数字：<strong>95% 的猫主人自认「已了解如何为猫提供合适的环境」</strong>——而同一份报告显示，<strong>42% 的英国宠物猫与另一只猫同住</strong>（其中 25% 与相处得来的猫同住、17% 与「并不总能相处」的猫同住，约合 <strong>180 万只猫可能因同居伙伴而处于应激状态</strong>）；出现至少一种可能提示应激的行为的比例，多猫家庭的猫为 <strong>55%</strong>、与相处不来的猫同住者为 <strong>67%</strong>、独居猫为 <strong>48%</strong>。报告列出的应激提示行为包括：对人或其他同住猫咆哮／拍打／咬、在猫砂盆外排泄、胆怯／恐惧／紧张、过度理毛、攻击不与其同住的猫、抓挠家具或门框地毯等。报告还指出，<strong>把一只新猫引入家庭，对原本已在家的猫可能比对新猫更有压力</strong> <a href="https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf" target="_blank" rel="noopener noreferrer">PDSA PAW 2024</a>。</p>
+<p><strong>把两组数据并排看，本项目的痛点定义就非常清楚了：「自认懂」与「实际做」之间存在系统性缺口，而且这个缺口在荷兰（疼痛信号识别）与英国（环境资源配置）用完全不同的方法各自被测量到了。</strong> 这是我在本次检索中找到的、对「是否需要这个产品」最有力的双重证据。它也顺带给出了内容优先级：多猫家庭的资源分离（每只猫独立的食盆、水盆、猫砂盆、睡窝、躲藏处）是<strong>证据最强、最容易可视化、也最容易被饲主忽略</strong>的一项——因为 95% 的人认为自己已经做到了。</p>
+<p><strong>但在付费意愿这一环，我必须指出证据的性质差异。</strong> 我找到的最强证据是媒体报道而非调研数据：2026 年初「猫咪语言」App 一度登顶 iOS 付费榜，同类产品订阅价 12 元/月至 68 元/月，商业模式普遍为「先免费试用、后自动续费」<a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>。<strong>登顶付费榜是真实付费行为，这很有说服力；但它同时也说明一个残酷事实：付费的是「音频 App」，成本结构几乎为零（两人团队、素材部分来自自家猫），而不是「沉浸式 VR 内容」。</strong> 用前者的付费数据去支撑后者的制作成本，是不成立的。中国本土也<strong>没有</strong>找到任何一份量化「饲主读不懂宠物」比例的调研——现有最强证据来自荷兰（PLOS ONE）与英国（PDSA），跨文化效度未经检验。</p>
+<blockquote>「广大铲屎官渴望与宠物进行『交流』的强烈需求」——<a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报对猫语翻译 App 热潮的报道</a></blockquote>
+<p><strong>跨子问题关联</strong>：本子问题确认了痛点的<strong>心理结构</strong>（自认懂、实际读不准），这直接决定了子问题 2 的科学边界——能补上「经验缺口」的是<strong>可验证的感官／行为事实</strong>，而不是拟人化的情绪叙事（见子问题 2 与「矛盾与分歧」）。</p>
+<hr>
+<h3 id="子问题-2-科学依据-猫狗感官与-环境舒适度-中-哪些有据可依-哪些是拟人化过度">子问题 2：科学依据——猫狗感官与「环境舒适度」中，哪些有据可依、哪些是拟人化过度？</h3>
+<p><strong>结论：感官差异部分是硬科学，可以放心作为内容骨架；「环境舒适度」有权威专业框架可以依附；但「代入宠物视角」这个说法本身踩在拟人化争议上，必须用措辞和呈现方式主动规避。</strong></p>
+<p>先把可信的部分钉死。<strong>视觉</strong>方面，一份兽医继续教育论文给出的结论是：犬为二色视觉，锥细胞分别吸收蓝紫与红光谱，<strong>因此犬能看见颜色，但无法区分绿色</strong>；猫的总视野估计为 200°，其中中央双眼视野 140°，两侧单眼视野各 30°；猫因角膜与瞳孔大、且有照膜（tapetum lucidum）反光，<strong>引发视觉所需的阈值光强，人类约为猫的 6 倍</strong>；但照膜也导致<strong>视觉锐度下降</strong>，因为被反射的光子在眼内散射 <a href="http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf" target="_blank" rel="noopener noreferrer">VetScienceWeek</a>。</p>
+<p>还有一个非常适合做「视角落差」演示的细节：<strong>锥细胞闪烁融合频率在人类约为 60 Hz，而动物为 70–80 Hz</strong>。这意味着人类看着连续不闪的光源，宠物可能感知为闪烁——该文甚至据此建议兽医诊室「使用不闪烁的灯泡对患畜视觉更友好」<a href="http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf" target="_blank" rel="noopener noreferrer">同上</a>。这是一个<strong>能被三天 demo 直接视觉化、且反直觉</strong>的知识点，价值极高。</p>
+<p><strong>听觉</strong>同样有干净的数据。2023 年一篇综述整理的听阈表（60 dB SPL 下）：人类 31 Hz–8 kHz（最敏感 −10 dB SPL @ 2–4 kHz），犬 67 Hz–45 kHz（最敏感 0 dB SPL @ 2–8 kHz），猫 58 Hz–75 kHz（最敏感 −3 dB SPL @ 8–16 kHz），数据分别引自 Heffner 等人的经典听力学研究 <a href="https://link.springer.com/article/10.1186/s42826-023-00182-3/tables/2" target="_blank" rel="noopener noreferrer">Laboratory Animal Research</a>。</p>
+<p><strong>嗅觉这一环需要打折扣引用。</strong> 我最终只找到一份大学课程讲义（伊利诺伊大学 ANSC 207《Special Senses》）给出了具体对比：嗅上皮面积<strong>犬 18–150 cm²、人类 3–4 cm²</strong>，嗅觉受体数量<strong>犬 &gt;1.5 亿、人类 500 万</strong> <a href="https://cdn.citl.illinois.edu/courses/ansc207/week2/special_senses/web_data/file10.htm" target="_blank" rel="noopener noreferrer">University of Illinois CITL</a>。⚠️ <strong>这是 Tier 3 教学材料，未标注一次文献，且这两个数字在文献中口径差异很大</strong>（受体数常见说法从 1.25 亿到 3 亿皆有）。因此我在报告中<strong>只把它当作量级参考</strong>：犬的嗅上皮面积与受体数量比人类高一到两个数量级——这个方向性结论是稳健的，具体数值不可依赖。值得注意的是，与视觉、听觉不同，<strong>嗅觉差异在现有 VR 技术下几乎无法被真实模拟</strong>（没有消费级嗅觉显示器），这反而说明：产品若要做嗅觉，只能用叙事与画面暗示，而不是还原——这正好是拟人化风险最高、也最容易被专业方质疑的地方。</p>
+<p><strong>「环境舒适度」这一侧，专业界并没有用「感官模拟」来定义它，而是用「资源」。</strong> AAFP 2021 猫科老年照护指南以「健康猫科环境的五大支柱」为框架（原文明确引用该框架），并把「关键资源」具化为：<strong>猫砂盆、食盆、饮用水、睡窝、抓挠面、躲藏空间，以及三维立体空间，且需分布在住宅内的多个位置</strong>；指南还建议为老年猫提供夜灯、坡道与台阶以便接近喜爱的高处 <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/" target="_blank" rel="noopener noreferrer">JFMS/PMC</a>。该框架的原始出处是 2013 年 AAFP/ISFM 猫科环境需求指南（Ellis、Rodan 等，发表于 <em>Journal of Feline Medicine and Surgery</em>），其五大支柱的官方表述为：<strong>一个安全的地方；多个且相互分离的关键环境资源；玩耍与捕猎行为的机会；积极、一致且可预测的人猫社交互动；以及尊重猫的嗅觉重要性的环境</strong> <a href="https://www.eurekalert.org/news-releases/511468" target="_blank" rel="noopener noreferrer">EurekAlert 新闻稿</a>。</p>
+<blockquote>「就像我们对猫的医疗决策所做的那样，我们为猫提供的环境所做的决定，必须基于坚实证据基础所产生的信息。」——指南共同主席 Sarah Ellis 博士 <a href="https://www.eurekalert.org/news-releases/511468" target="_blank" rel="noopener noreferrer">EurekAlert</a></blockquote>
+<p><strong>这对产品定义是一个决定性的提醒：</strong> 「居家环境舒适度」在专业上不是一种「感受」，而是一张<strong>可核查的资源清单</strong>（几个猫砂盆、放在哪、有没有躲藏处、有没有垂直空间）。这意味着项目如果要做「感知环境舒适度」，最容易被专业方认可的形态不是「让饲主感受猫的情绪」，而是<strong>让饲主以猫的身体尺度与感官重新「看见」自己的家，并对照五大支柱发现资源缺口</strong>。这恰好也是三天内能做出可演示效果的东西——把「资源缺口」可视化，比模拟情绪可靠得多，也更容易验证。</p>
+<p><strong>拟人化风险必须正视。</strong> 动物行为学界的争论由来已久：Burghardt 1991 年提出的「批判性拟人化」至今仍被作为需要辩护的概念讨论，Nature 曾以《拟人化的危险》为题警告拟人化的回潮，评论者直接追问「为什么拟人化仍然不是一种科学方法」<a href="https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf" target="_blank" rel="noopener noreferrer">Anthropomorphism Revisited</a>。本项目的风险不在于用了拟人化，而在于<strong>把拟人化的结果当作关于动物的事实来宣称</strong>。可行的规避方式是措辞纪律：宣称「我们可视化猫的视野／听阈／身体尺度」（可证伪），而不要宣称「我们知道猫此刻在想什么」（不可证伪）。</p>
+<p><strong>跨子问题关联</strong>：本子问题为子问题 3 的差异化定位提供了依据——竞品（猫语翻译 App）恰恰踩在最不可靠的那一侧（把发声翻译为人类语言），而本项目可以站在最可靠的那一侧（可视化的感官与资源事实）。这也是下面「矛盾与分歧」中专家批评的技术根源。</p>
+<hr>
+<h3 id="子问题-3-竞品与差异化-谁做过-做到什么程度-空位在哪">子问题 3：竞品与差异化——谁做过、做到什么程度、空位在哪？</h3>
+<p><strong>结论：机制有学术占位者，视角有轻度商业先例，但「家养宠物 + 饲主侧 + 自家居家环境」这个具体组合仍是空位；而最大的竞品不是硬件，是「声音翻译」这条被专家否定的捷径。</strong></p>
+<p>先看最近的先行工作。<strong>iStrayPaws</strong>（东南大学，VRST 2024，DOI 10.1145/3641825.3687729）是本报告找到的最直接对标：它指出 VRPT（Virtual Reality Perspective-Taking）虽在共情诱导上有效，但应用「主要集中于弱势人类，而非动物」，而既有的动物相关工作「主要针对农场动物与野生动物」；该系统让用户以第一人称经历流浪动物遭遇的恶劣天气、饥饿与疾病，并加入视听与动觉设计；用户研究显示 <strong>VRPT 受试者在状态共情与特质共情上均较传统方法有显著提升</strong> <a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">ACM VRST 2024 / 摘要</a>。</p>
+<p>这是一个双向结论。<strong>正面</strong>：机制有效，且是被同行评议验证过的，团队方向不是空中楼阁。<strong>负面</strong>：机制本身不再新颖，「第一人称动物视角 VR」的学术占位已被拿下，而且是在一个学术会议上。团队如果以「首创宠物视角 VR」作为立项话术，是经不起追问的。真正可辩护的差异在于<strong>对象与目标</strong>：iStrayPaws 是<strong>流浪动物 + 苦难叙事 + 同情</strong>，本项目是<strong>家养宠物 + 居家环境 + 理解</strong>——用户不同（潜在领养者 vs 已有饲主）、情感目标不同（同情 vs 理解）、场景不同（街头 vs 自家客厅）。后者恰恰落在 iStrayPaws 自己划定的范围之外：其摘要明确把既有动物相关研究概括为「主要针对农场动物与野生动物」，并把自身定位为面向流浪动物的补位之作——<strong>换言之，「家养宠物 + 饲主自己的居住环境」被它的定位排除在外</strong>。</p>
+<p><strong>而且这个赛道正在快速变窄，这是本次补漏中最值得警惕的发现。</strong> 我通过 Semantic Scholar 的引文图谱追溯了 iStrayPaws 的施引文献，发现 2025–2026 年已经出现一批直接围绕「非人类具身」的作品，而不是零星一篇：<strong>《Having Dog Ears "for Real"：Effects of Active and Passive Haptics on Embodying Non-Human Body Parts in VR》</strong>（2026，arXiv）直接研究在 VR 中具身<strong>狗的耳朵</strong>；<strong>《Seeing with a Bird's Perception：Designing a Wearable Experience to Reorient Attention to Everyday Nature》</strong>（CHI EA 2026）做的是<strong>鸟类感知的可穿戴体验</strong>，把「用别的物种的感官看日常环境」这一核心创意搬进了真实产品形态；此外还有《Investigating How to Control Virtual Spiders While Embodying Them in Virtual Reality》（VRST 2025）、《Me, the Elephant, and the Virtual World》（PACM HCI 2025）、《ZooWear：Animal-Inspired Head-Mounted Haptic Interfaces》（2025）等 <a href="https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3641825.3687729/citations" target="_blank" rel="noopener noreferrer">Semantic Scholar 引文图谱</a>。一篇 2025 年发表的沉浸式共情计算系统性综述（覆盖 2000–2024 年文献）也已经把「VR 跨越物种共情」写进结论，并以 iStrayPaws 作为该方向的代表案例，称其通过 VRPT 系统「促进对流浪动物的共情并推动动物福利的意识与行为改变」<a href="https://oss.sciexplor.com/manuscript/329/publish/EC-202501.pdf" target="_blank" rel="noopener noreferrer">Empathic Computing 综述</a>。</p>
+<p><strong>这一发现改变了差异化论证的性质。</strong> 原先是「机制被占位、但邻域空旷」，现在是「<strong>机制被占位、且邻域正在被快速填充</strong>」——尤其《Seeing with a Bird's Perception》几乎就是同一命题（用他物种感官重新注意日常环境）在鸟类与自然连接场景下的实现。这意味着本项目的窗口不是「有没有人做」，而是「<strong>在什么时候、由谁把家养宠物的居家环境这一格补上</strong>」。对三天立项的直接含义是：不能只讲创意，必须把「为什么是我们、为什么是这个物种、为什么是这个场景」讲清楚。</p>
+<p><strong>商业侧的先例比想象中近，但也比想象中浅。</strong> Enabot（赋之科技）的宠物陪伴机器人以贴地视角拍摄，其市场负责人明确说「陪伴机器人的贴地视角就很好地解决了这个问题（拍不到小猫喝水角度）」，并且<strong>用户把这种镜头视角称为「老鼠视角」，在互联网上非常受欢迎，也符合短视频平台的传播特征</strong>；该公司全球用户已突破 100 万、覆盖 160 多个国家，海外营收占六成 <a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网/人民日报海外版</a>。<strong>这段证词的价值在于：它证明了「非人类视角的内容」本身有传播力和用户接受度，而且已经被商业化验证——但它只做到「把相机放低」，没有做到「用猫的感官和身体尺度重建世界」。</strong> 这正是本项目的空位：从「换个机位」升级为「换个物种的感知系统」。</p>
+<p><strong>但真正需要警惕的竞品是「声音翻译」，因为它更快、更便宜、更接近用户的语言。</strong> 2026 年初「猫咪语言」App 一度登顶 iOS 付费榜（两人团队），同类 App 大量涌现，提供人猫语言双向互译，还有微信小程序与实体「宠物翻译器」硬件；MeowTalk（喵语）称其用兽医科研中收集标注的猫发声数据训练专有 AI 模型；订阅价从 12 元/月到 68 元/月不等 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>。</p>
+<p><strong>而这条捷径有硬伤，且已被专业人士公开点破。</strong> 猫行为咨询师孙文（十年、超 3000 例猫行为问题矫正经验）的判断是：把猫叫标准化翻译「不够准确且片面」；猫对人的发声大部分是幼猫与母猫沟通方式的延续，具体需求多样化，「不同的猫面对不同的人发音方式也可能会有不同，因为无法简单地把猫表达需求的发声翻译成『我饿了』这样的人类语言」；<strong>最危险的是「猫咪紧张焦虑时的负面情绪发声，与发情或回应主人的声音十分相似，如果按照软件的标准化翻译，极易造成南辕北辙的危险误判」</strong>；「人语转猫语」功能更是不可取，因为猫与人之间并不依靠猫叫声交流，电子合成声可能被猫误认为陌生同类，若碰巧代表负面情绪，「很容易导致猫咪产生困惑、紧张甚至严重的应激反应，进而引发对主人的攻击」<a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>。</p>
+<blockquote>「只有将声音与肢体动作结合起来，才能真正当好宠物的『贴身翻译官』。」——猫行为咨询师孙文，建议饲主观察「放松的坐姿、翘起的尾巴和细小的瞳孔」与「夹着尾巴、耳朵后压、弓背炸毛或面部紧绷」的差别 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a></blockquote>
+<p><strong>这段话几乎是为本项目写的定位说明：</strong> 行业最热的产品线（声音翻译）被专业方判定为不可靠甚至有害，而专业方给出的正确路径是<strong>多模态的、以肢体与情境为主的观察</strong>——这正是「视觉／情境化理解」的主场，也正是「宠物视角」能提供而「声音翻译」提供不了的东西。同时它也是一个警告：<strong>如果本项目为了三天 demo 的传播效果而加入「翻译猫在说什么」的功能，就会主动跳进这个已经被专业方否定的坑里。</strong></p>
+<p>其他竞品形态相对边缘：GoPro Fetch 犬用胸背带属于「第一视角拍摄」的硬件方案（厂商页面可见）<a href="https://gopro.com/es/pe/shop/mounts-accessories/fetch-dog-harness/ADOGM-001.html" target="_blank" rel="noopener noreferrer">GoPro</a>；室内宠物摄像头是一个稳定增长但拥挤的品类（中文市场研究报告给出约 8.5% CAGR 的口径，属 Tier 3-4，仅供参考）<a href="https://dxpress.gelonghui.com/p/3266208" target="_blank" rel="noopener noreferrer">格隆汇</a>。中国市场的智能宠物品类集中在喂食器、饮水机、猫砂盆、智能舱与陪伴机器人，宠主一次购置可达 2000 元以上 <a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网</a>——<strong>注意这些产品全部在做「宠物侧的数据与照料」，没有一个是做「饲主侧的感知与理解」。</strong></p>
+<p><strong>跨子问题关联</strong>：本子问题的空位判断依赖子问题 2 的科学边界——空位之所以存在，部分原因是它要求制作方掌握饲主通常不具备的感官与行为学知识。<strong>但第 2 轮的引文图谱显示这道「护栏」正在变薄</strong>：2025–2026 年已有多组研究者分别切入「他物种感官」这一命题（狗耳朵、鸟的感知、蜘蛛具身），说明门槛并不像原先估计的那样高。因此差异化的可持续性更多取决于<strong>场景与数据的独占性</strong>（家养宠物 + 饲主自家环境 + 依附权威资源清单），而不是知识门槛本身；可行性则仍依赖子问题 4 的技术路线选择。</p>
+<hr>
+<h3 id="子问题-4-三天工程可行性-什么能做出来-什么做不出来">子问题 4：三天工程可行性——什么能做出来，什么做不出来？</h3>
+<p><strong>结论：如果坚持「头显 VR」，三天内最可能交付的是一段不能给现场观众试戴的视频；如果接受降级，三天内可以做出一个真正可交互、可在手机上打开的第一人称「猫的身体尺度」体验。技术路线的选择，是本次立项最大的单点决策。</strong></p>
+<p>先看那条最硬的约束。<strong>WebXR Device API 在 Safari on iOS 上从 3.2 到 27.2 全版本为「Not supported」；桌面 Safari 13 到 27 为「Disabled by default」；Chrome 79–154 为「Partial support」</strong> <a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">caniuse</a>。这条结论经第二个独立 Tier 1 来源交叉验证：MDN 把 WebXR Device API 标注为「<strong>Limited availability</strong>」，并明确写道「<strong>This feature is not Baseline because it does not work in some of the most widely-used browsers</strong>」（该特性尚不属基线，因为它在若干最广泛使用的浏览器中无法工作），同时标记为实验性技术，建议生产环境谨慎使用 <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>。（我另外查阅了 <strong>Safari 27 的官方版本说明</strong>，其中<strong>未出现 WebXR 相关条目</strong>，但这张页面体积很小、可能由脚本渲染，因此只作为弱旁证，不作为结论依据 <a href="https://developer.apple.com/documentation/safari-release-notes/safari-27-release-notes" target="_blank" rel="noopener noreferrer">Apple Developer</a>。）这条事实的杀伤力在于它同时击中了两个要害：<strong>（1）</strong> 如果做网页端 WebXR，iPhone 用户（在中国是绝对主力）根本无法进入沉浸模式；<strong>（2）</strong> 如果改用原生 Unity／Unreal，则三天内不可能完成开发＋分发，而且<strong>现场还得有头显</strong>。换句话说，团队在立项表里把「VR」写成唯一机制，实际上是把交付押在了一个「既要求用户有头显、又要求用户不是 iPhone」的交集上——而这个交集非常小。</p>
+<p><strong>头显的性能门槛也远比想象中严厉。</strong> 一份 2026 年 3 月的工程实践总结指出：VR 的运动到光子延迟通常为 20–30 ms，<strong>90 fps 约合每帧 11 ms，已是当代头显（Meta Quest 3、PlayStation VR2）的基线期待</strong>；掉到 72 fps「就足以在长时间会话中触发不适」；一份 90 fps 的帧预算大致是 CPU 约 5 ms、GPU 约 5 ms、系统开销约 1 ms <a href="https://www.lavapi.com/blog/vr-performance-budgets-90fps" target="_blank" rel="noopener noreferrer">LavaPi</a>。<strong>三天内要在一个没做过 VR 的团队手里稳定跑满 90 fps 的 360° 场景，本身就是高风险项</strong>——这也解释了为什么团队自己的打分矩阵里，候选 A 在「三天能否完成」这一维度只拿到 2/2/3（候选 B 是 5/5/5）。</p>
+<p><strong>现实的降级路线，而且已经有现成零件可用。</strong> 一条 360° 全景视频／图片路线可以在普通手机浏览器里跑：<strong>@cloudimage/360-video</strong> 是一个基于 Three.js 的交互式 360° 视频播放器，Akamai 也提供 A-Frame 的 AMP 360 播放器组件 <a href="https://scaleflex.github.io/cloudimage-360-video/" target="_blank" rel="noopener noreferrer">cloudimage-360-video</a> <a href="http://mdtp-a.akamaihd.net/docs/web/amp-web-aframe/akamai.amp.aframe.AframeConfig.html" target="_blank" rel="noopener noreferrer">Akamai AMP A-Frame</a>。这意味着「第一人称看一个空间」在<strong>不依赖 WebXR、不依赖头显</strong>的前提下是可实现的（触摸拖拽／陀螺仪视差），代价是沉浸感显著下降，收益是<strong>任何人扫个二维码就能看</strong>。此外，360° 消费级设备的门槛也不高：Insta360 X5 于 2025 年 4 月 22 日发布，与 X4 同样支持 8K/30fps，X5 采用 1/1.28 英寸双传感器、弱光表现明显提升，X4 在 5.7K/30fps 下实验室续航 135 分钟、X5 在 5.7K/24fps 下可达 185 分钟 <a href="https://www.trustedreviews.com/versus/insta360-x5-vs-x4" target="_blank" rel="noopener noreferrer">Trusted Reviews</a>——<strong>但更重要的一个问题是：把 360 相机放在离地 20 厘米的高度、在室内弱光下、追着一只不配合的猫拍摄，是一个独立的内容制作难题，而且它几乎不可能在三天内与开发并行完成。</strong></p>
+<p>因此三天路线可以这样切分：<strong>方案甲（推荐）</strong>：放弃实时 3D，做「预渲染 360° 或伪 3D 视差 + 少量可交互热点」的网页体验，重心放在<strong>视角差异的可视化对比</strong>（例如同一客厅在「人眼 1.7 m 高度 + 三色视觉」与「猫眼 0.25 m 高度 + 二色视觉 + 高频闪烁可见」两种呈现下切换）；<strong>方案乙（备选）</strong>：完全放弃沉浸，做一张「猫的身体尺度 + 感官滤镜」的图像／短视频生成器，用户上传自己家的照片即可得到「猫眼中的样子」。方案乙的工程风险最低，而且<strong>它天然回答了「三天结束演示什么」这个立项表上的空白</strong>。</p>
+<p><strong>跨子问题关联</strong>：本子问题的结论会反向改写子问题 3 的差异化表述——如果最终交付的是「预渲染 360/伪 3D」，那么差异化就不能再建立在「VR 沉浸」上，而必须建立在「感官差异的准确性与可核查性」上，这与子问题 2 的结论完全一致。</p>
+<hr>
+<h3 id="子问题-5-效果验证-怎么证明-看过之后饲主真的更理解宠物">子问题 5：效果验证——怎么证明「看过之后饲主真的更理解宠物」？</h3>
+<p><strong>结论：这是全报告证据最薄的一环。可以借用成熟的共情／观点采择量表与前后测设计，但「以宠物视角观察自己的家 → 饲主行为改变」这条因果链，目前没有任何直接研究支持。</strong></p>
+<p>先说可借用的部分。iStrayPaws 的用户研究已经示范了这类干预的标准做法：以<strong>状态共情与特质共情</strong>作为结果变量，与「传统方法」做对照，并报告显著提升 <a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">ACM</a>。在心理健康领域，一项基于心智化的 VR 团体干预随机对照试验直接使用<strong>人际反应指针（IRI, Interpersonal Reactivity Index）</strong>作为测量工具 <a href="https://www.sciencedirect.com/science/article/pii/S2949678026000218" target="_blank" rel="noopener noreferrer">ScienceDirect</a>，说明 IRI 在 VR 干预研究中是被广泛接受的量表。另有一项使用 360° 视频 VR 影响照护者情绪与行为的研究，采用了包含<strong>共情、观点采择与焦虑</strong>的前测／后测问卷设计 <a href="https://scholar.harvard.edu/sites/scholar.harvard.edu/files/seyam/files/using_360-video_virtual_reality_to_influence_caregiver_emotions_and_behaviors_for_childhood_literacy.pdf" target="_blank" rel="noopener noreferrer">Harvard Scholar</a>；针对动物的态度测量则有<strong>动物态度量表（AAS, Animal Attitude Scale）</strong>的适配与验证研究 <a href="https://kujane.minciencias.gov.co/Record/UNAB2_4e5c8cf75b12a2287ec705351b382daa" target="_blank" rel="noopener noreferrer">MinCiencias</a>。这些工具足以支撑一个「三天可行」的轻量验证：<strong>5–10 人前测／后测，测量对特定行为的识别率与对居家环境资源的改善意愿。</strong></p>
+<p><strong>但必须诚实地标出空白。</strong> PLOS ONE 那项研究给出的是<strong>识别能力</strong>的测量（把行为信号判为疼痛的可能性评分），而不是<strong>体验后的行为改变</strong>；iStrayPaws 给出的是<strong>共情</strong>的提升，而不是<strong>问题解决</strong>的提升。截至本次检索，<strong>我没有找到任何一项研究测量过「让饲主以宠物的感官／视角观察自己的家环境」对后续环境改善行为的影响</strong>。这意味着项目的核心价值假设是<strong>推断性的</strong>，而不是已被证实的。</p>
+<p>因此三天内最稳妥的验证目标不是「证明饲主更爱宠物」，而是一个<strong>可证伪的窄命题</strong>，例如：「看完该体验后，受试者对 N 个居家环境资源缺口的识别率，从前测的 X% 提升到后测的 Y%」。这一命题的好处是：它直接复用 PLOS ONE 已经验证过的「教育干预能提升行为解读能力」这一前提，测量方法成熟，样本量要求低，而且<strong>失败时的信息量最大</strong>——如果连识别率都不提升，那么整个「以视角换理解」的假设就该被重新审视。</p>
+<p><strong>跨子问题关联</strong>：本子问题的薄弱直接削弱了子问题 1 中「需求真实」到「该产品能解决」之间的跳跃；我把这一点保留在「不确定性与缺口」中，并据此把关，不建议在立项陈述中把「提升理解」说成已验证的效果。</p>
+<hr>
+<h3 id="子问题-6-风险与差异点">子问题 6：风险与差异点</h3>
+<p><strong>结论：本项目最大的风险不是技术，而是「用了最贵的媒介去讲一件本来只需要图片就能讲清的事」。</strong></p>
+<p>把前述证据汇总，风险按其真实杀伤力排序：</p>
+<p><strong>风险一（最高）：机制—成本错配。</strong> 宠主的付费行为发生在极低成本产品上（两人团队、音频素材部分自采的猫语 App 一度登顶付费榜 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>），而 VR 内容制作需要 360 相机、室内低角度拍摄、性能调优与头显分发，成本高出几个数量级，触达面却小得多（WebXR 在 iOS 不支持 <a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">caniuse</a>）。<strong>如果三天后交付的是一个必须戴头显才能体验的 demo，它在立项评审中的说服力可能低于一个能扫码即看的网页。</strong></p>
+<p><strong>风险二：机制已被占位而团队无差异化叙事。</strong> iStrayPaws 已在 VRST 2024 发表 <a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">ACM</a>。团队若以「首创宠物视角 VR」为话术会被直接推翻；必须转向「家养宠物／居家环境／理解而非同情」这一区间。</p>
+<p><strong>风险三：拟人化学术质疑。</strong> 「代入宠物视角」在动物行为学中是有争议的表述 <a href="https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf" target="_blank" rel="noopener noreferrer">Anthropomorphism Revisited</a>。规避方式是只宣称可核查的感官与资源事实。</p>
+<p><strong>风险四：眩晕与性能。</strong> 90 fps／20–30 ms 是硬门槛，72 fps 即可诱发不适 <a href="https://www.lavapi.com/blog/vr-performance-budgets-90fps" target="_blank" rel="noopener noreferrer">LavaPi</a>。</p>
+<p><strong>风险五（被团队自己忽略了，但从表格看很明显）：内容制作而非开发才是真正的瓶颈。</strong> 团队打分矩阵里候选 A 在「三天能否完成」上得 2/2/3，是三个候选里唯一被自评拖后腿的维度（B 为 5/5/5）[见立项文档转录](team2_proposal_transcript.md)。这个自评是准确的，但团队仍选了 A，理由偏向「新颖／有代入感」而非可行性。</p>
+<p><strong>差异点（三条，按可辩护程度排序）：</strong></p>
+<ol>
+<li><strong>从「换机位」升级到「换感知系统」。</strong> 竞品 Enabot 已做到贴地视角并证明其内容受欢迎（用户称「老鼠视角」）<a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网</a>，但没人把二色视觉、200° 视野、58 Hz–75 kHz 听阈、<code>人眼阈值 6 倍</code>的暗视觉这些<strong>可核查的物种差异</strong>做成体验。这是 Hard-to-copy 的部分，因为它要求动物感官学知识。</li>
+<li><strong>站在专业方认可的那一侧。</strong> 猫语翻译类产品被专业行为咨询师批评为不可靠甚至可能有害 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>，而专业方推荐的路径是「声音与肢体动作结合」的观察——视觉／情境化理解是主场。</li>
+<li><strong>依附权威框架做可核查的价值。</strong> 用 AAFP/ISFM「五大支柱」与关键资源清单作为内容骨架 <a href="https://www.eurekalert.org/news-releases/511468" target="_blank" rel="noopener noreferrer">EurekAlert</a> <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/" target="_blank" rel="noopener noreferrer">JFMS/PMC</a>，使产品从「你感觉猫更舒服了吗」变成「你家缺哪几项资源」。</li>
+</ol>
+<hr>
+</section>
+<section class="card">
+<h2 id="对比-comparison">对比 Comparison</h2>
+<h3 id="表-1-技术路线对比-三天交付视角">表 1：技术路线对比（三天交付视角）</h3>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>路线</th>
+<th>需要头显</th>
+<th>触达面</th>
+<th>三天可行性</th>
+<th>主要坑</th>
+<th>来源</th>
+</tr></thead><tbody>
+<tr>
+<td>WebXR + three.js（真 VR）</td>
+<td>✅ 是</td>
+<td>❌ 极小（iOS Safari 全版本不支持）</td>
+<td>🔴 低</td>
+<td>iOS 无支持；90 fps 性能门槛；设备分发</td>
+<td><a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">caniuse</a>、<a href="https://www.lavapi.com/blog/vr-performance-budgets-90fps" target="_blank" rel="noopener noreferrer">LavaPi</a></td>
+</tr>
+<tr>
+<td>Unity / Unreal 原生</td>
+<td>✅ 是</td>
+<td>❌ 极小</td>
+<td>🔴 极低</td>
+<td>三天内开发＋打包＋分发不现实</td>
+<td>—</td>
+</tr>
+<tr>
+<td>预渲染 360° 视频／图片（浏览器）</td>
+<td>❌ 否</td>
+<td>🟢 大（扫码即看）</td>
+<td>🟡 中</td>
+<td>内容拍摄是瓶颈（低角度、弱光、宠物不配合）；沉浸感下降</td>
+<td><a href="https://scaleflex.github.io/cloudimage-360-video/" target="_blank" rel="noopener noreferrer">cloudimage-360-video</a>、<a href="https://www.trustedreviews.com/versus/insta360-x5-vs-x4" target="_blank" rel="noopener noreferrer">Insta360 对比</a></td>
+</tr>
+<tr>
+<td>伪 3D 视差／图像滤镜生成器</td>
+<td>❌ 否</td>
+<td>🟢 最大</td>
+<td>🟢 高</td>
+<td>沉浸感最弱；但「猫眼中的你家」叙事完整</td>
+<td>—</td>
+</tr>
+</tbody></table></div>
+<h3 id="表-2-竞品与空位">表 2：竞品与空位</h3>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>玩家</th>
+<th>类型</th>
+<th>做什么</th>
+<th>独立评价 / 局限</th>
+<th>来源</th>
+</tr></thead><tbody>
+<tr>
+<td>iStrayPaws（东南大学）</td>
+<td>学术 VR 系统</td>
+<td>第一人称流浪动物视角，视听＋动觉</td>
+<td>同行评议验证共情显著提升；对象为流浪动物，非家养宠物</td>
+<td><a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">ACM VRST 2024</a></td>
+</tr>
+<tr>
+<td>「猫咪语言」及同类猫语 App</td>
+<td>手机 App</td>
+<td>人猫语言双向翻译，订阅 12–68 元/月</td>
+<td>一度登顶 iOS 付费榜（两人团队）；专家指标准化翻译不可靠、易危险误判</td>
+<td><a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a></td>
+</tr>
+<tr>
+<td>MeowTalk（喵语）</td>
+<td>手机 App</td>
+<td>用兽医科研标注数据训练 AI 模型识别猫叫</td>
+<td>同上，属同一被质疑品类</td>
+<td><a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a></td>
+</tr>
+<tr>
+<td>Enabot 陪伴机器人</td>
+<td>硬件＋App</td>
+<td>全屋移动、语音通话、贴地视角拍摄</td>
+<td>全球用户破 100 万、160 余国；「老鼠视角」内容受欢迎；<strong>只是机位低，非感官模拟</strong></td>
+<td><a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网</a></td>
+</tr>
+<tr>
+<td>寵爾頓 智能舱</td>
+<td>硬件</td>
+<td>新风、温控、喂养、监控、互动一体，2000 余元</td>
+<td>解决异味痛点；与「理解宠物」无关</td>
+<td><a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网</a></td>
+</tr>
+<tr>
+<td>GoPro Fetch 犬用胸背带</td>
+<td>硬件配件</td>
+<td>把运动相机固定在犬背上</td>
+<td>第一视角拍摄方案；无感官转换、无理解层</td>
+<td><a href="https://gopro.com/es/pe/shop/mounts-accessories/fetch-dog-harness/ADOGM-001.html" target="_blank" rel="noopener noreferrer">GoPro</a></td>
+</tr>
+<tr>
+<td>室内宠物摄像头品类</td>
+<td>硬件</td>
+<td>远程看护、双向语音</td>
+<td>品类拥挤、增长约 8.5% CAGR（Tier 3-4 口径）</td>
+<td><a href="https://dxpress.gelonghui.com/p/3266208" target="_blank" rel="noopener noreferrer">格隆汇</a></td>
+</tr>
+</tbody></table></div>
+<p><strong>对表 1 的解读。</strong> 这张表真正的信息不在任何单格里，而在「需要头显」这一列的分布上：四条路线里有两条要求头显，而这两条的触达面都是「极小」，原因却不是用户不愿意买头显，而是<strong>浏览器层面直接把 iPhone 用户挡在门外</strong>（Safari on iOS 全版本不支持 WebXR）。这一点值得反复强调，因为团队在立项文档里把「VR」写成了产品定义的一部分，等于在尚未评估分发路径的情况下先锁定了最难的那条路。反过来看，下方两条「不需要头显」的路线并非妥协产物——预渲染 360° 与伪 3D 生成器都能保留「以猫的身体尺度重新看家」这个核心叙事，只是把「沉浸」从技术指标降级为程度问题。考虑到宠主主力是 90 后（42.7%）与 00 后（26.3%），扫码即看与分享传播的价值，很可能高于头显带来的那一点临场感。此外，360° 内容路线的真实瓶颈被普遍低估：Insta360 X5 这样的消费级设备在硬件上完全够用（8K/30fps、双 1/1.28 英寸传感器、弱光提升）<a href="https://www.trustedreviews.com/versus/insta360-x5-vs-x4" target="_blank" rel="noopener noreferrer">Trusted Reviews</a>，但在室内弱光下、以离地 20 厘米的高度、追拍一只不配合的猫，是<strong>独立于开发工作的内容生产难题</strong>，而三天里开发和拍摄会争抢同一批人力。</p>
+<p><strong>对表 2 的解读。</strong> 这张表最值得注意的模式是：<strong>现有玩家几乎全部在做「宠物侧」——摄像头看宠物、穿戴设备测宠物、智能舱养宠物、翻译器解读宠物叫声。</strong> 唯一一个做「饲主侧体验」的 iStrayPaws 是学术项目，且对象是流浪动物；唯一一个已经商业化的「非人类视角」是 Enabot 的贴地机位，但它把视角当成内容素材（「老鼠视角」用于短视频传播），而不是理解工具。<strong>「饲主侧 + 家养宠物 + 自家居家环境 + 感官转换」这四个条件的交集是空的</strong>，而这正是本项目的定位空间。另一个模式同样重要：最热的那条产品线（猫语翻译）之所以热，是因为它把「理解宠物」压缩成了一个<strong>输入输出明确、几乎零成本、可订阅</strong>的动作；本项目若想与之竞争注意力，必须同样提供一个「一眼就懂」的动作，而不是一段需要解释才能理解的沉浸体验——这也再次指向了子问题 4 中「可扫码即看」的路线。</p>
+<p><strong>两张表的交叉含义。</strong> 表 1 说「别把头显当唯一机制」，表 2 说「空位在饲主侧的感官转换」。两者合起来给出的最优解，是一个<strong>不需要头显、以物种感官差异为核心内容、依附五大支柱框架、并把视角作为可视化工具而非情绪渲染</strong>的产品。这个形态恰好也是三天内最可能做成的形态——这是本报告最重要的一个收敛结论。</p>
+<hr>
+</section>
+<section class="card">
+<h2 id="矛盾与分歧-contradictions-debates">矛盾与分歧 Contradictions &amp; Debates</h2>
+<p><strong>1. 饲主的自我认知 vs 实测能力。</strong> 宠主普遍相信猫狗「听得懂」「能交流」：英国媒体报道的调查称「近半数宠主确信自己的猫狗理解自己」<a href="https://www.dailypost.co.uk/news/uk-world-news/pet-owners-cat-dog-tendendo-30271862" target="_blank" rel="noopener noreferrer">Daily Post</a>、「数百万宠主确信自己的猫狗能回话」<a href="https://www.mirror.co.uk/lifestyle/pet-owners-cats-and-dogs-34010799" target="_blank" rel="noopener noreferrer">Mirror</a>（<strong>注：均为小报转述的宠主调查，未标明样本量与委托方，属 Tier 3，仅作态度侧参考</strong>）；但 PLOS ONE 2026 的对照研究显示，养犬者在<strong>细微信号</strong>识别上并不优于从未养过狗的人 <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">PLOS ONE</a>。 <strong>证据权重</strong>：PLOS ONE 是同行评议的对照研究（n=647），权重高于媒体调查。 <strong>结论</strong>：两者并不矛盾，而是揭示了痛点的结构——<strong>不是能力缺失，而是能力错觉</strong>。这一点直接影响立项话术：不应假设用户会主动承认自己「读不懂」，产品需要让差异被看见，而不是被告知。</p>
+<p><strong>2. 猫语翻译 App 厂商宣称 vs 行为专家判断。</strong> 厂商侧：MeowTalk 称其模型基于兽医科研标注数据训练，部分 App 标榜「帮助主人更好地了解猫咪的需求」（尽管角落里标着「仅供娱乐」）；专家侧：孙文认为标准化翻译片面，且<strong>把紧张焦虑的发声误译为平常含义可能导致危险误判</strong>，人语转猫语还可能诱发猫的应激与攻击 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>。 <strong>证据权重</strong>：厂商的模型训练说法无法独立验证；专家的判断有十年、3000 余例临床行为矫正经验支撑，且记者实测出现「粮碗是满的却翻译成『我饿了』」的翻车案例。 <strong>结论</strong>：<strong>专家侧证据明显更强。</strong> 值得注意的是，记者实测中「召唤功能几乎每次都能吸引家猫注意」是有效的——这说明<strong>单向的、基于真实录音的刺激</strong>有效，而<strong>双向的语义翻译</strong>不可靠。这个区分对本项目极其有用：如果要碰声音，只能碰「真实录音的单向刺激」，绝不要碰「语义翻译」。</p>
+<p><strong>3. 猫的锥细胞数量：3 种还是 2 种？</strong> 兽医继续教育论文明确写「猫有 3 个锥细胞种群」<a href="http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf" target="_blank" rel="noopener noreferrer">VetScienceWeek</a>，而主流动物视觉文献通常把猫列为二色视觉（dichromat，蓝＋绿）物种。 <strong>证据权重</strong>：两者都是 Tier 2 级别，且我未能获取该论文引用的原始光学研究。 <strong>结论</strong>：<strong>未解决。</strong> 我选择在报告中只使用更保守的表述（猫的色觉显著不同于人类三色视觉），而不声称猫的锥细胞具体数量。<strong>这条分歧恰好印证了一个方法论要求：凡涉及具体感官数值，产品文案都应回到原始研究核对，而不是相信二手科普。</strong></p>
+<p><strong>4. 猫的听觉上限：58 Hz–75 kHz 还是 45 Hz–64 kHz？</strong> 2023 年综述的听阈表给出猫 58 Hz–75 kHz，引自 Heffner 与 Heffner 的研究 <a href="https://link.springer.com/article/10.1186/s42826-023-00182-3/tables/2" target="_blank" rel="noopener noreferrer">Laboratory Animal Research</a>；而该领域被广泛引用的常见数值是 45 Hz–64 kHz。 <strong>证据权重</strong>：综述表格是有引用来源的二手汇总，其引用的原始论文我未能获取全文。 <strong>结论</strong>：<strong>未解决</strong>，差异可能源自测量条件（声压级、判定标准）或转述误差。<strong>实践建议：产品中若展示听觉对比，应使用「犬猫可听频率远高于人类」这一稳健结论，避免把有争议的具体上限当作事实展示。</strong></p>
+<p><strong>5. VR 眩晕阈值：不同来源口径不一。</strong> 工程实践总结给出「运动到光子延迟 20–30 ms、90 fps 为基线、72 fps 即可诱发不适」<a href="https://www.lavapi.com/blog/vr-performance-budgets-90fps" target="_blank" rel="noopener noreferrer">LavaPi</a>；而我下载的一篇 2025–2026 年沉浸式视觉质量系统综述则报告，体三维社交 XR 的端到端延迟「超过 900 ms 才显著降低临场感」<a href="https://link-hkg.springer.com/content/pdf/10.1007/s10055-026-01433-z_reference.pdf" target="_blank" rel="noopener noreferrer">Virtual Reality 期刊</a>。 <strong>证据权重</strong>：两者测量对象不同——前者是本地头显渲染延迟，后者是网络传输的社交 XR 延迟。 <strong>结论</strong>：<strong>不是真矛盾。</strong> 但存在一个对本项目重要的<strong>证据缺口</strong>：我没有找到直接研究「低视角／动物第一视角是否更易诱发眩晕」的文献。这是一个真实的未知，建议在三天原型中预留一次 5 人试戴的耐受性观察。</p>
+<hr>
+</section>
+<section class="card">
+<h2 id="不确定性与缺口-uncertainties-gaps">不确定性与缺口 Uncertainties &amp; Gaps</h2>
+<ul>
+<li class="warn">⚠️ <strong>中国本土的「饲主读不懂宠物」量化数据缺失。</strong> 现有最强证据来自荷兰（PLOS ONE 2026）与英国（PDSA PAW 2024）。跨文化、跨品种效度未经检验，不能直接外推为中国市场的痛点比例。</li>
+<li class="warn">⚠️ <strong>「理解宠物」类消费的付费意愿数据只有间接证据。</strong> 结论建立在猫语 App 登顶 iOS 付费榜的媒体报道上 <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>，而非付费意愿调研。且该产品的成本结构与 VR 内容不可比。</li>
+<li class="warn">⚠️ <strong>核心因果链未被任何研究验证。</strong> 「以宠物视角观察自家环境 → 饲主理解与行为改善」这条链路，未找到直接研究。现有证据只能覆盖前半段（教育干预能提升行为解读）与旁证（第一人称动物 VR 能提升共情）。</li>
+<li class="ok">✅ <strong>【第 2 轮已补齐】PDSA PAW 2024 的具体数值已获取</strong>（58% 独居／42% 多猫、55% vs 48% vs 67%、95% 自认了解环境、约 180 万只猫）。原缺口系因网页版数值仅以信息图呈现，第 2 轮改为下载报告 PDF 并本地提取文本后解决 <a href="https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf" target="_blank" rel="noopener noreferrer">PDSA PAW 2024 PDF</a>。</li>
+<li class="warn">⚠️ <strong>2025–2026 年「非人类具身 VR」研究集群只核实到题录层面，未读全文。</strong> 《Having Dog Ears "for Real"》《Seeing with a Bird's Perception》《Investigating How to Control Virtual Spiders…》等作品的<strong>标题、年份、发表venue</strong> 来自 Semantic Scholar 引文图谱（结构化元数据，可信），但其<strong>具体实验设计、样本量与结论我未获取全文</strong>，因此报告中只用于「赛道正在被填充」这一存在性判断，未引用其任何具体发现。arXiv 查询本次遭遇 HTTP 429，ACM 全文仍被拦截。</li>
+<li class="warn">⚠️ <strong>iStrayPaws 全文始终未获取</strong>（ACM 全文页与 PDF 均被 Cloudflare 403 拦截，第 2 轮尝试的第三方阅读代理亦失败）。因此其<strong>样本量、效应量、实验设计细节仍属未知</strong>；本报告的结论建立在 Semantic Scholar 返回的官方摘要之上，辅以一篇独立系统综述对其方法的描述 <a href="https://oss.sciexplor.com/manuscript/329/publish/EC-202501.pdf" target="_blank" rel="noopener noreferrer">Empathic Computing 综述</a>。</li>
+<li class="warn">⚠️ <strong>猫的听觉上限与锥细胞数量存在来源冲突</strong>（见「矛盾与分歧」第 3、4 条），未解决。</li>
+<li class="warn">⚠️ <strong>狗的嗅觉数值只有 Tier 3 来源，且文献口径分歧大。</strong> 第 2 轮找到的伊利诺伊大学课程讲义（嗅上皮 18–150 cm² vs 人类 3–4 cm²；受体 &gt;1.5 亿 vs 500 万）<strong>未标注一次文献</strong>，而同类数字在文献中差异很大 <a href="https://cdn.citl.illinois.edu/courses/ansc207/week2/special_senses/web_data/file10.htm" target="_blank" rel="noopener noreferrer">University of Illinois CITL</a>。原计划的 Tier 1–2 路线全部失败：Frontiers 犬嗅觉综述页面为 JS 渲染无法本地提取，PMC 直连遭遇 SSL 异常与 reCAPTCHA，core.ac.uk 的 PDF 返回 403。<strong>因此报告只使用了量级性的方向结论，未采信任何具体数值。</strong></li>
+<li class="warn">⚠️ <strong>多个市场规模数据来自付费墙后的商业报告</strong>（宠物可穿戴、室内宠物摄像头、宠物科技市场），本次仅能确认报告存在与中文二手转述的口径（如约 8.5% CAGR），属 Tier 3-4，未独立验证。</li>
+<li class="warn">⚠️ <strong>iStrayPaws 全文未获取。</strong> ACM 全文页被 Cloudflare 拦截（HTTP 403），本次结论全部基于 Semantic Scholar 返回的官方摘要（已逐字核对），未获取其具体实验设计、样本量与效应量。</li>
+<li class="warn">⚠️ <strong>PDSA、AAFP 等机构数据以英文/英国语境为主</strong>，中国宠物行为学（如本土猫品种、居住密度、高层住宅环境）的差异未被覆盖。</li>
+<li class="warn">⚠️ <strong>【检索过程限制】</strong> 本次计划的三个并行检索子代理全部因 API 并发上限（HTTP 429）失败且未产出笔记。<strong>第 2 轮改为串行自查并补回了三个缺口（PAW 2024 数值、五大支柱完整引文、2025–2026 研究集群），置信度由 74% 上调至 80%；但实际检索量仍低于 exhaustive 档位上限（20 次检索／30 来源），且「效果验证」子问题仅 58%，因此仍未达 exhaustive 的 95% 门槛。</strong></li>
+</ul>
+<hr>
+</section>
+<section class="card">
+<h2 id="建议-recommendations">建议 Recommendations</h2>
+<h3 id="主要建议-primary-recommendation">主要建议 Primary Recommendation</h3>
+<p><strong>保留「视角转换」作为核心创意，但把「VR」从产品定义降级为候选机制之一，并把三天交付形态定为「不需要头显、扫码即看」的网页体验。</strong></p>
+<p>理由有三条，且都有证据支撑。<strong>第一，需求侧的痛点结构适合「视觉化理解」而不是「声音翻译」</strong>——PLOS ONE 2026 证明饲主的短板是细微信号识别（经验缺口），而专业行为咨询师推荐的正是「声音与肢体结合」的观察路径，恰好是视觉的主场；而最热的声音翻译路线已被专业方指出可能造成危险误判 <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">PLOS ONE</a> <a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>。<strong>第二，头显路线在三天内与受众覆盖上双重不利</strong>——WebXR 在 iOS Safari 全版本不受支持，而宠主主力是手机端的 90 后与 00 后；90 fps／20–30 ms 的性能门槛对一个新团队是硬风险 <a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">caniuse</a> <a href="https://www.lavapi.com/blog/vr-performance-budgets-90fps" target="_blank" rel="noopener noreferrer">LavaPi</a> <a href="https://business.cctv.com/2026/01/05/ARTIdmv2AWmVeRVodaZYLOvQ260105.shtml" target="_blank" rel="noopener noreferrer">央视网</a>。<strong>第三，差异化空位在「感官转换」而不在「沉浸感」</strong>——Enabot 已证明「非人类视角内容」有传播力（「老鼠视角」），但没人把二色视觉、200° 视野、58 Hz–75 kHz 听阈、暗视觉 6 倍阈值这些可核查的物种差异做成体验 <a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">人民网</a>。</p>
+<p><strong>具体落地建议（三天）：</strong></p>
+<ol>
+<li><strong>把内容骨架锚定在 AAFP/ISFM「五大支柱」与关键资源清单上</strong>（安全的地方、多个且分离的关键资源、玩耍与捕猎机会、可预测的人猫互动、尊重嗅觉的环境）<a href="https://www.eurekalert.org/news-releases/511468" target="_blank" rel="noopener noreferrer">EurekAlert</a>，让产品输出从「情绪描述」变成「你家缺哪几项资源」——这是可核查、可验证、且专业方认可的价值。</li>
+<li><strong>选一个最强、最反直觉的演示点做主视觉</strong>：推荐「同一客厅在猫的视野与身体尺度下是什么样」，并叠加<strong>闪烁融合频率差异</strong>（人眼约 60 Hz vs 宠物 70–80 Hz，即人看着不闪的灯宠物看着在闪）<a href="http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf" target="_blank" rel="noopener noreferrer">VetScienceWeek</a>。这一点反直觉、可视觉化、且证据来自兽医继续教育材料。</li>
+<li><strong>验证目标写成窄命题</strong>，例如「看后对 N 项居家资源缺口的识别率从前测 X% 提升到后测 Y%」，采用 5–10 人前后测，量表可参考 IRI 与动物态度量表 AAS 的既有用法 <a href="https://www.sciencedirect.com/science/article/pii/S2949678026000218" target="_blank" rel="noopener noreferrer">ScienceDirect</a> <a href="https://scholar.harvard.edu/sites/scholar.harvard.edu/files/seyam/files/using_360-video_virtual_reality_to_influence_caregiver_emotions_and_behaviors_for_childhood_literacy.pdf" target="_blank" rel="noopener noreferrer">Harvard Scholar</a>。<strong>不要</strong>把验证目标写成「提升饲主对宠物的爱」——那不可证伪。</li>
+<li><strong>措辞纪律（针对拟人化风险）</strong>：只说「我们可视化猫的视野／听阈／身体尺度」（可证伪），不说「我们知道猫此刻在想什么」（不可证伪），并在答辩材料中主动引用「批判性拟人化」这一学术概念，把质疑转成专业性展示 <a href="https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf" target="_blank" rel="noopener noreferrer">Anthropomorphism Revisited</a>。</li>
+<li><strong>在 60 秒陈述中主动承认先行工作与正在收窄的窗口</strong>：明确说明 iStrayPaws（VRST 2024）已证明第一人称动物 VR 能显著提升共情，且 2025–2026 年已出现一批非人类具身 VR 作品（狗耳朵触觉具身、鸟的感知可穿戴、蜘蛛具身），本项目差异在「家养宠物／饲主自家环境／理解而非同情」<a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">ACM</a> <a href="https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3641825.3687729/citations" target="_blank" rel="noopener noreferrer">引文图谱</a>。主动承认比被质疑后承认更有说服力，而且「我们知道自己站在谁的肩膀上、也知道窗口在关」本身就是一种专业信号。</li>
+</ol>
+<h3 id="备选方案-alternative">备选方案 Alternative</h3>
+<p><strong>如果团队坚持「必须有 VR 头显」</strong>（例如课程评分明确要求沉浸式技术、或已能稳定借到头显），那么建议：<strong>保留头显体验为「展台版」，同时并行做一条手机端降级路径</strong>，并把三天范围的「必须完成」锁定在「手机端可看」上，头显版作为加分项而非交付底线。触发这个选择的条件是：<strong>现场能拿到头显的真机，且团队中有人此前做过 WebXR 或 Unity</strong>。两个条件缺一，主建议仍然成立。此外，若课程评分更看重技术复杂度而非用户价值，那么应当把这一点明确写进立项陈述——那是评分口径问题，不是产品问题。</p>
+<h3 id="不建议-not-recommended">不建议 Not Recommended</h3>
+<ol>
+<li><strong>不要加「翻译宠物在说什么」的功能。</strong> 该路线已被专业行为咨询师公开判定为不可靠且可能危险（把焦虑发声误译为平常含义、合成声可能引发应激与攻击）<a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">新闻晨报</a>。加入这个功能会把项目直接推到专业质疑的火力下，且技术上依赖一个团队三天内无法验证的语义模型。</li>
+<li><strong>不要把「VR」当作唯一机制锁死。</strong> 依据是 WebXR 在 iOS Safari 全版本不受支持这一硬事实 <a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">caniuse</a>；锁定头显等于锁定最小受众。</li>
+<li><strong>不要承诺「让饲主完全读懂宠物」。</strong> PLOS ONE 的研究恰恰说明这类能力是<strong>经验依赖</strong>的、且细微信号识别极难 <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">PLOS ONE</a>。承诺过大既不可验证，也正好落入拟人化的批评范围。</li>
+<li><strong>不要在未做小样本试戴的情况下把「低视角第一人称」当作无风险设计。</strong> 我未找到任何研究直接检验「动物第一视角是否更易诱发眩晕」，这是一个真实的未知（见「矛盾与分歧」第 5 条）。</li>
+</ol>
+<hr>
+</section>
+<section class="card">
+<h2 id="方法-methodology">方法 Methodology</h2>
+<ul>
+<li><strong>Depth</strong>：exhaustive（目标档位）。<strong>实际执行量仍低于档位上限</strong>：计划 20 次检索／30 来源，实际完成约 16 次批量检索（含 50 条以上查询）／35 个来源，其中 19 次 <code>web_fetch</code> 尝试（11 次取得有效全文）、6 个 PDF 下载后本地提取文本、若干页面经本地下载＋正则抽取以避免摘要失真、1 次 Semantic Scholar 引文图谱查询。<strong>分两轮完成：第 1 轮产出报告初版（置信度 74%），第 2 轮针对三个可修缺口补漏、并对最关键的技术事实做独立交叉验证后将置信度上调至 80%。</strong></li>
+<li><strong>最终置信度</strong>：<strong>80%</strong>（低于 exhaustive 的 95% 门槛，原因见下）。分项：需求真实性 85%（Tier 1 PLOS ONE + Tier 2 PAW 全国代表性调查，两条独立证据路径结论一致）／科学依据 82%（Tier 1 指南与综述为主）／竞品与差异化 84%（引文图谱补入 2025–2026 研究集群）／三天可行性 78%／风险与差异点 72%／<strong>效果验证 58%（最低）</strong>。</li>
+<li><strong>子问题</strong>：定义 6 个；完整回答 4 个（需求真实性、科学依据、竞品与差异化、三天可行性），部分回答 2 个（效果验证 58%、风险与差异点 72%）。</li>
+<li><strong>多跳检索链</strong>：① 行业报告（央视网/白皮书）→ 消费结构与人群年龄 → 分发渠道含义（手机端优先）；② 需求痛点 → PLOS ONE 原始论文 → 其引用的教育干预证据 → 反推「经验可被人工制造」的立项逻辑；③ VR 机制 → iStrayPaws（VRST 2024）→ 其自述的未覆盖区间（农场动物/野生动物）→ 本项目的差异化区间；④ 猫语 App 热潮（媒体报道）→ 猫行为咨询师批评 → 反推「视觉/情境」路线更稳；⑤ 技术选型 → caniuse WebXR 兼容性表 → iOS 不支持 → 倒逼降级路线；⑥ 宠物视角商业先例 → Enabot「老鼠视角」→ 区分「换机位」与「换感知系统」；⑦ <strong>【第 2 轮新增】iStrayPaws → Semantic Scholar 引文图谱 → 发现 2025–2026 非人类具身 VR 研究集群（狗耳朵触觉具身、鸟的感知可穿戴、蜘蛛具身等）→ 把差异化论证从「邻域空旷」修正为「邻域正在被快速填充」</strong>；⑧ <strong>【第 2 轮新增】PDSA 网页版数值缺失（信息图）→ 直接下载 PAW 2024 报告 PDF → 本地提取文本 → 获得 95% 自认了解 vs 42% 多猫家庭 的对照数字</strong>。</li>
+<li><strong>来源分级</strong>：Tier 1 = 同行评议论文／官方指南／官方报告（PLOS ONE 2026、JFMS/AAFP 指南、Laboratory Animal Research 综述、ACM VRST 2024、央视网转述的派读白皮书、caniuse、GoPro 官方页）；Tier 2 = 可靠媒体／专业机构／行业媒体（人民网/人民日报海外版、新闻晨报、EurekAlert 新闻稿、VetScienceWeek、PDSA、Trusted Reviews、LavaPi、Semantic Scholar API）；Tier 3-4 = 二手转述与商业报告摘要（格隆汇、市场研究报告索引、评论文章）。</li>
+<li><strong>关键挑战</strong>：</li>
+<ol>
+<li><strong>三个并行检索子代理全部因 API 并发上限（HTTP 429）失败</strong>，未产出任何笔记，导致实际检索量低于 exhaustive 档位，并直接造成「效果验证」等子问题的证据薄弱。<strong>第 2 轮改为串行自查并补回三个缺口，但该失败仍是本报告未达 95% 置信度的首要原因。</strong></li>
+<li><strong>两篇最关键的原始文献无法获取全文</strong>：iStrayPaws 的 ACM 全文页被 Cloudflare 拦截（403），第 2 轮尝试的第三方阅读代理亦失败，只能使用 Semantic Scholar 返回的官方摘要；AAFP/ISFM 2013 环境需求指南的 PDF 获取同样被 403 拦截，五大支柱的正式表述改用 EurekAlert 官方新闻稿，<strong>但第 2 轮从 PAW 2024 报告的参考文献中取得了该指南的完整引文</strong>（Ellis SL, Rodan I, Carney HC, Heath S, Rochlitz I, Shearburn LD, … Westropp JL. AAFP and ISFM feline environmental needs guidelines. <em>J Feline Med Surg</em> 2013;15(3):219–230）。</li>
+<li><strong>原始文档为图片型 PDF（无文字层）</strong>，通过逐页图像读取转录，手写内容存在辨识误差，已单独产出转录文件供核对。</li>
+<li><strong>多个市场数据位于付费墙后</strong>（宠物可穿戴、室内宠物摄像头、宠物科技市场），无法独立验证。</li>
+<li><strong>PMC 直连受限</strong>：第 2 轮尝试用脚本下载 PMC 页面时遭遇 SSL 异常与 reCAPTCHA，狗的嗅觉量化数值最终仍未取得（详见「不确定性与缺口」）。</li>
+</ol>
+<li><strong>可复现性材料</strong>：本地已存 <code>research_notes/</code>（需求线笔记、原始 PDF 与提取文本、下载页面快照）与 <code>team2_proposal_transcript.md</code>（立项文档逐页转录）。</li>
+</ul>
+<hr>
+</section>
+<section class="card">
+<h2 id="来源-sources">来源 Sources</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>#</th>
+<th>标题</th>
+<th>URL</th>
+<th>日期</th>
+<th>可信度</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>The abilities in dog pain sign recognition…（PLOS ONE, Gardeweg et al., Utrecht University, n=647）</td>
+<td><a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512" target="_blank" rel="noopener noreferrer">https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512</a></td>
+<td>2026-04-01</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>2</td>
+<td>《2026 年中国宠物行业白皮书（消费报告）》要点（央视网转载，派读宠物出品）</td>
+<td><a href="https://business.cctv.com/2026/01/05/ARTIdmv2AWmVeRVodaZYLOvQ260105.shtml" target="_blank" rel="noopener noreferrer">https://business.cctv.com/2026/01/05/ARTIdmv2AWmVeRVodaZYLOvQ260105.shtml</a></td>
+<td>2026-01-05</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>3</td>
+<td>2021 AAFP Feline Senior Care Guidelines（JFMS 23(7):613–638，含五大支柱与居家资源清单）</td>
+<td><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/" target="_blank" rel="noopener noreferrer">https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/</a></td>
+<td>2021-06-25</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Hearing range table（Sheep as a large animal model for hearing research, Lab Anim Res）</td>
+<td><a href="https://link.springer.com/article/10.1186/s42826-023-00182-3/tables/2" target="_blank" rel="noopener noreferrer">https://link.springer.com/article/10.1186/s42826-023-00182-3/tables/2</a></td>
+<td>2023</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>5</td>
+<td>iStrayPaws: Immersing in a Stray Animal's World through First-Person VR（ACM VRST 2024，摘要经 Semantic Scholar 核实）</td>
+<td><a href="https://dl.acm.org/doi/10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">https://dl.acm.org/doi/10.1145/3641825.3687729</a></td>
+<td>2024</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>6</td>
+<td>WebXR Device API 浏览器兼容性表（caniuse）</td>
+<td><a href="https://caniuse.com/webxr" target="_blank" rel="noopener noreferrer">https://caniuse.com/webxr</a></td>
+<td>2026-10 查询</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Fetch: 犬用胸背带（GoPro 官方产品页）</td>
+<td><a href="https://gopro.com/es/pe/shop/mounts-accessories/fetch-dog-harness/ADOGM-001.html" target="_blank" rel="noopener noreferrer">https://gopro.com/es/pe/shop/mounts-accessories/fetch-dog-harness/ADOGM-001.html</a></td>
+<td>2026-10 查询</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Feline behavior experts release guidelines…（AAFP/ISFM 环境需求指南五大支柱，EurekAlert 新闻稿）</td>
+<td><a href="https://www.eurekalert.org/news-releases/511468" target="_blank" rel="noopener noreferrer">https://www.eurekalert.org/news-releases/511468</a></td>
+<td>2013-06-18</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>9</td>
+<td>AI能听懂「喵星人」的心声？「猫语」翻译软件大量出现，专家：单纯依靠声音翻译不准（新闻晨报/腾讯新闻）</td>
+<td><a href="https://news.qq.com/rain/a/20260309A07U8S00" target="_blank" rel="noopener noreferrer">https://news.qq.com/rain/a/20260309A07U8S00</a></td>
+<td>2026-03-09</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>10</td>
+<td>當萌寵遇上智能科技——寵物智能用品品牌發展觀察（人民網／人民日報海外版）</td>
+<td><a href="http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html" target="_blank" rel="noopener noreferrer">http://sc.people.com.cn/BIG5/n2/2025/1017/c345167-41382842.html</a></td>
+<td>2025-10-17</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>11</td>
+<td>Do dogs really see in black &amp; white? Facts &amp; myths about animal vision（VetScienceWeek）</td>
+<td><a href="http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf" target="_blank" rel="noopener noreferrer">http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf</a></td>
+<td>—</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>12</td>
+<td>The PAW Report 2024（PDSA 动物福利报告，YouGov 全国代表性调查）</td>
+<td><a href="https://www.pdsa.org.uk/what-we-do/pdsa-animal-wellbeing-report/paw-report-2024" target="_blank" rel="noopener noreferrer">https://www.pdsa.org.uk/what-we-do/pdsa-animal-wellbeing-report/paw-report-2024</a></td>
+<td>2024</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>13</td>
+<td>Performance Budgets for VR: Hitting 90fps or Paying the Sickness Tax（LavaPi）</td>
+<td><a href="https://www.lavapi.com/blog/vr-performance-budgets-90fps" target="_blank" rel="noopener noreferrer">https://www.lavapi.com/blog/vr-performance-budgets-90fps</a></td>
+<td>2026-03-22</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>14</td>
+<td>Insta360 X5 vs X4: What's new?（Trusted Reviews）</td>
+<td><a href="https://www.trustedreviews.com/versus/insta360-x5-vs-x4" target="_blank" rel="noopener noreferrer">https://www.trustedreviews.com/versus/insta360-x5-vs-x4</a></td>
+<td>2025</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>15</td>
+<td>Anthropomorphism Revisited（Comparative Cognition &amp; Behavior Reviews，讨论 Burghardt 的 critical anthropomorphism）</td>
+<td><a href="https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf" target="_blank" rel="noopener noreferrer">https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf</a></td>
+<td>2007</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>16</td>
+<td>Semantic Scholar Graph API 元数据（iStrayPaws 官方摘要与作者/会议信息）</td>
+<td><a href="https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3641825.3687729" target="_blank" rel="noopener noreferrer">https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3641825.3687729</a></td>
+<td>2026-10-02 查询</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>17</td>
+<td>@cloudimage/360-video — Interactive 360° Video Player on Three.js（可复用开源组件）</td>
+<td><a href="https://scaleflex.github.io/cloudimage-360-video/" target="_blank" rel="noopener noreferrer">https://scaleflex.github.io/cloudimage-360-video/</a></td>
+<td>2026-10 查询</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>18</td>
+<td>Akamai AMP A-Frame 360 播放器配置文档</td>
+<td><a href="http://mdtp-a.akamaihd.net/docs/web/amp-web-aframe/akamai.amp.aframe.AframeConfig.html" target="_blank" rel="noopener noreferrer">http://mdtp-a.akamaihd.net/docs/web/amp-web-aframe/akamai.amp.aframe.AframeConfig.html</a></td>
+<td>2026-10 查询</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>19</td>
+<td>Using 360 video VR to influence caregiver emotions and behaviors（含共情／观点采择前后测问卷设计）</td>
+<td><a href="https://scholar.harvard.edu/sites/scholar.harvard.edu/files/seyam/files/using_360-video_virtual_reality_to_influence_caregiver_emotions_and_behaviors_for_childhood_literacy.pdf" target="_blank" rel="noopener noreferrer">https://scholar.harvard.edu/sites/scholar.harvard.edu/files/seyam/files/using_360-video_virtual_reality_to_influence_caregiver_emotions_and_behaviors_for_childhood_literacy.pdf</a></td>
+<td>—</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>20</td>
+<td>Effectiveness of a mentalisation-based VR group intervention: RCT（使用 IRI 人际反应指针）</td>
+<td><a href="https://www.sciencedirect.com/science/article/pii/S2949678026000218" target="_blank" rel="noopener noreferrer">https://www.sciencedirect.com/science/article/pii/S2949678026000218</a></td>
+<td>2026</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>21</td>
+<td>2025-2031 年家用室内宠物摄像机增长趋势分析（约 8.5% CAGR，中文二手转述）</td>
+<td><a href="https://dxpress.gelonghui.com/p/3266208" target="_blank" rel="noopener noreferrer">https://dxpress.gelonghui.com/p/3266208</a></td>
+<td>2025</td>
+<td><span class="tier tier-3">🟡 Tier 3</span></td>
+</tr>
+<tr>
+<td>22</td>
+<td>Adaptación y validación de la escala de actitud hacia los animales (AAS)</td>
+<td><a href="https://kujane.minciencias.gov.co/Record/UNAB2_4e5c8cf75b12a2287ec705351b382daa" target="_blank" rel="noopener noreferrer">https://kujane.minciencias.gov.co/Record/UNAB2_4e5c8cf75b12a2287ec705351b382daa</a></td>
+<td>—</td>
+<td><span class="tier tier-3">🟡 Tier 3</span></td>
+</tr>
+<tr>
+<td>23</td>
+<td>Global Indoor Pet Camera Market Growth 2026-2032（商业报告索引，付费墙）</td>
+<td><a href="https://www.marketresearch.com/LP-Information-Inc-v4134/Global-Indoor-Pet-Camera-Growth-45543594/" target="_blank" rel="noopener noreferrer">https://www.marketresearch.com/LP-Information-Inc-v4134/Global-Indoor-Pet-Camera-Growth-45543594/</a></td>
+<td>2026</td>
+<td><span class="tier tier-4">🔴 Tier 4</span></td>
+</tr>
+<tr>
+<td>24</td>
+<td>A systematic review of visual quality in immersive systems（Virtual Reality 期刊，延迟阈值 900 ms 口径）</td>
+<td><a href="https://link-hkg.springer.com/content/pdf/10.1007/s10055-026-01433-z_reference.pdf" target="_blank" rel="noopener noreferrer">https://link-hkg.springer.com/content/pdf/10.1007/s10055-026-01433-z_reference.pdf</a></td>
+<td>2026</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>25</td>
+<td>Nearly half of pet owners say their dog or cat understands them（小报转述的宠主调查，样本与委托方未标明）</td>
+<td><a href="https://www.dailypost.co.uk/news/uk-world-news/pet-owners-cat-dog-tendendo-30271862" target="_blank" rel="noopener noreferrer">https://www.dailypost.co.uk/news/uk-world-news/pet-owners-cat-dog-tendendo-30271862</a></td>
+<td>—</td>
+<td><span class="tier tier-3">🟡 Tier 3</span></td>
+</tr>
+<tr>
+<td>26</td>
+<td>Millions of pet owners are convinced their cats and dogs can talk back（同上，Tier 3，仅作态度侧参考）</td>
+<td><a href="https://www.mirror.co.uk/lifestyle/pet-owners-cats-and-dogs-34010799" target="_blank" rel="noopener noreferrer">https://www.mirror.co.uk/lifestyle/pet-owners-cats-and-dogs-34010799</a></td>
+<td>—</td>
+<td><span class="tier tier-3">🟡 Tier 3</span></td>
+</tr>
+<tr>
+<td>27</td>
+<td>PDSA PAW Report 2024 <strong>完整报告 PDF</strong>（第 2 轮新增：数值来源，58%/42%/55%/48%/67%/95%）</td>
+<td><a href="https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf" target="_blank" rel="noopener noreferrer">https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf</a></td>
+<td>2024</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>28</td>
+<td>Ellis SL, Rodan I, Carney HC, Heath S, Rochlitz I, Shearburn LD, … Westropp JL. AAFP and ISFM Feline Environmental Needs Guidelines. <em>J Feline Med Surg</em> 2013;15(3):219–230（五大支柱原始文献；引文经 PAW 2024 参考文献表核对）</td>
+<td><a href="https://doi.org/10.1177/1098612X13477536" target="_blank" rel="noopener noreferrer">https://doi.org/10.1177/1098612X13477536</a></td>
+<td>2013</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>29</td>
+<td>Semantic Scholar 引文图谱查询（iStrayPaws 的施引文献，用于发现 2025–2026 非人类具身 VR 研究集群）</td>
+<td><a href="https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3641825.3687729/citations" target="_blank" rel="noopener noreferrer">https://api.semanticscholar.org/graph/v1/paper/DOI:10.1145/3641825.3687729/citations</a></td>
+<td>2026-10-02 查询</td>
+<td><span class="tier tier-2">🔵 Tier 2</span></td>
+</tr>
+<tr>
+<td>30</td>
+<td>A systematic review of using immersive technologies for empathic computing from 2000–2024（Empathic Computing，开放获取，含跨物种共情与 iStrayPaws 的方法描述）</td>
+<td><a href="https://oss.sciexplor.com/manuscript/329/publish/EC-202501.pdf" target="_blank" rel="noopener noreferrer">https://oss.sciexplor.com/manuscript/329/publish/EC-202501.pdf</a></td>
+<td>2025</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>31</td>
+<td>Seeing with a Bird's Perception: Designing a Wearable Experience to Reorient Attention to Everyday Nature（CHI EA 2026；<strong>题录级，未读全文</strong>）</td>
+<td><a href="https://doi.org/10.1145/3772363.3798350" target="_blank" rel="noopener noreferrer">https://doi.org/10.1145/3772363.3798350</a></td>
+<td>2026</td>
+<td><span class="tier tier-1">⭐ Tier 1</span>（venue）／未读全文</td>
+</tr>
+<tr>
+<td>32</td>
+<td>Investigating How to Control Virtual Spiders While Embodying Them in Virtual Reality（VRST 2025；<strong>题录级，未读全文</strong>）</td>
+<td><a href="https://dl.acm.org/doi/pdf/10.1145/3756884.3765989" target="_blank" rel="noopener noreferrer">https://dl.acm.org/doi/pdf/10.1145/3756884.3765989</a></td>
+<td>2025</td>
+<td><span class="tier tier-1">⭐ Tier 1</span>（venue）／未读全文</td>
+</tr>
+<tr>
+<td>33</td>
+<td>MDN Web Docs: WebXR Device API（第 2 轮新增；独立交叉验证「非基线、在部分主流浏览器不可用」）</td>
+<td><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API" target="_blank" rel="noopener noreferrer">https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API</a></td>
+<td>2026-10-02 查询</td>
+<td><span class="tier tier-1">⭐ Tier 1</span></td>
+</tr>
+<tr>
+<td>34</td>
+<td>University of Illinois CITL, ANSC 207《Special Senses》讲义：The dog's olfaction（嗅上皮与受体数量；<strong>Tier 3 教学材料，无一次文献标注</strong>）</td>
+<td><a href="https://cdn.citl.illinois.edu/courses/ansc207/week2/special_senses/web_data/file10.htm" target="_blank" rel="noopener noreferrer">https://cdn.citl.illinois.edu/courses/ansc207/week2/special_senses/web_data/file10.htm</a></td>
+<td>—</td>
+<td><span class="tier tier-3">🟡 Tier 3</span></td>
+</tr>
+<tr>
+<td>35</td>
+<td>Safari 27 Beta Release Notes（Apple 官方；<strong>未提及 WebXR</strong>，但页面可能由脚本渲染，仅作弱旁证）</td>
+<td><a href="https://developer.apple.com/documentation/safari-release-notes/safari-27-release-notes" target="_blank" rel="noopener noreferrer">https://developer.apple.com/documentation/safari-release-notes/safari-27-release-notes</a></td>
+<td>2026</td>
+<td><span class="tier tier-1">⭐ Tier 1</span>／弱旁证</td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>本报告为研究产物，不含实现建议之外的代码或架构决策。三个技术路线的最终选择、三天范围的取舍，由 Team 2 自行决定。</em></p>
+</section>
+  </main>
+</div>
+<button class="totop" id="totop" type="button" aria-label="返回顶部">↑</button>
+<footer>本页由研究报告 Markdown 自动生成 · 单文件离线可用 · 所有外部链接在新标签页打开</footer>
+<script>
+(function(){
+  var html=document.documentElement, btn=document.getElementById('themeBtn');
+  function apply(t){html.setAttribute('data-theme',t);btn.textContent=(t==='dark'?'☀️ 浅色':'🌙 深色');}
+  // the <head> bootstrap already set the attribute; just sync the button label
+  apply(html.getAttribute('data-theme')==='dark'?'dark':'light');
+  btn.addEventListener('click',function(){
+    var t=html.getAttribute('data-theme')==='dark'?'light':'dark';
+    apply(t); try{localStorage.setItem('dsh-report-theme',t)}catch(e){}
+  });
+
+  var prog=document.getElementById('progress'), top=document.getElementById('totop');
+  function onScroll(){
+    var h=document.body.scrollHeight-window.innerHeight;
+    var p=h>0?Math.min(100,(window.scrollY/h)*100):0;
+    prog.style.width=p+'%';
+    top.classList.toggle('show', window.scrollY>500);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+  top.addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'})});
+
+  var links=[].slice.call(document.querySelectorAll('.sidebar a'));
+  var targets=links.map(function(a){return document.querySelector(a.getAttribute('href'))}).filter(Boolean);
+  if('IntersectionObserver' in window){
+    var obs=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          links.forEach(function(l){l.classList.remove('active')});
+          var idx=targets.indexOf(en.target);
+          if(idx>=0) links[idx].classList.add('active');
+        }
+      });
+    },{rootMargin:'-72px 0px -75% 0px',threshold:0});
+    targets.forEach(function(t){obs.observe(t)});
+  }
+})();
+</script>
+</body>
+</html>

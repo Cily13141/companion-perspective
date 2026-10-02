@@ -1,0 +1,167 @@
+{
+  "updated": "2026-10-02",
+  "project": "伴侣视角 · 可演示原型",
+  "tagline": "猫狗眼中的你家",
+  "human": {
+    "label": "人类",
+    "color": "三色视觉（蓝 / 绿 / 红三种锥细胞）",
+    "flicker_fusion_hz": "约 60",
+    "hearing": { "low_hz": 31, "high_hz": 8000, "best": "−10 dB SPL @ 2–4 kHz" }
+  },
+  "species": {
+    "cat": {
+      "label": "猫",
+      "color": "二色视觉；与人类三色视觉差异显著",
+      "flicker_fusion_hz": "70–80",
+      "hearing": { "low_hz": 58, "high_hz": 75000, "best": "−3 dB SPL @ 8–16 kHz" },
+      "visual_field": "总计约 200°（中央双眼视野 140° + 两侧单眼视野各 30°）",
+      "low_light": "引发视觉所需的光强阈值约为人类的 1/6（反过来说，人类需要约 6 倍光强）",
+      "eye_height_m": 0.25
+    },
+    "dog": {
+      "label": "犬",
+      "color": "二色视觉（蓝紫 + 红两种锥细胞），能看见颜色但无法区分绿色",
+      "flicker_fusion_hz": "70–80",
+      "hearing": { "low_hz": 67, "high_hz": 45000, "best": "0 dB SPL @ 2–8 kHz" },
+      "visual_field": null,
+      "low_light": null,
+      "eye_height_m": 0.35
+    }
+  },
+  "human_eye_height_m": 1.65,
+  "view_labels": {
+    "A": { "title": "人眼所见", "badge": "原始照片" },
+    "B": { "title": "色觉模拟", "badge": "二色觉近似模拟" },
+    "C": { "title": "低视角 + 感官叠加", "badge": "示意，非物理重建" }
+  },
+  "sources": [
+    { "id": "hearing2023", "title": "Sheep as a large animal model for hearing research（听阈对比表：人/犬/猫）", "url": "https://link.springer.com/article/10.1186/s42826-023-00182-3/tables/2", "date": "2023", "tier": 1 },
+    { "id": "vetvision", "title": "Do dogs really see in black & white? Facts & myths about animal vision（VetScienceWeek）", "url": "http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf", "date": "", "tier": 2 },
+    { "id": "aafp2021", "title": "2021 AAFP Feline Senior Care Guidelines（含「健康猫科环境五大支柱」与居家关键资源清单）", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/", "date": "2021-06-25", "tier": 1 },
+    { "id": "ellis2013", "title": "Ellis SL, Rodan I, et al. AAFP and ISFM Feline Environmental Needs Guidelines. J Feline Med Surg 2013;15(3):219–230", "url": "https://doi.org/10.1177/1098612X13477536", "date": "2013", "tier": 1 },
+    { "id": "pdsa2024", "title": "PDSA PAW Report 2024（YouGov 全国代表性调查；58% 独居／42% 多猫、95% 自认已懂环境）", "url": "https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf", "date": "2024", "tier": 2 },
+    { "id": "plos2026", "title": "Gardeweg et al. Dog pain sign recognition in owners vs non-owners. PLOS ONE 2026（n=647）", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512", "date": "2026-04-01", "tier": 1 },
+    { "id": "istraypaws", "title": "Xu et al. iStrayPaws: First-Person VR to Bridge Human-Animal Empathy. ACM VRST 2024", "url": "https://dl.acm.org/doi/10.1145/3641825.3687729", "date": "2024", "tier": 1 },
+    { "id": "anthropo", "title": "Anthropomorphism Revisited（批判性拟人化与拟人化争议）", "url": "https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf", "date": "2007", "tier": 2 }
+  ],
+  "claims": [
+    {
+      "id": "hearing",
+      "text": "可听频率范围：人类 31 Hz–8 kHz，犬 67 Hz–45 kHz，猫 58 Hz–75 kHz（60 dB SPL）。",
+      "source_ids": ["hearing2023"],
+      "confidence": "high",
+      "caveat": "犬猫的听觉上限远高于人类，是「同一间屋子、不同的声音世界」最直接的证据。"
+    },
+    {
+      "id": "dog_color",
+      "text": "犬为二色视觉：两种锥细胞分别吸收蓝紫与红光谱，因此犬能看见颜色，但无法区分绿色。",
+      "source_ids": ["vetvision"],
+      "confidence": "high",
+      "caveat": "本页的色觉模拟是「合并红绿锥体通道 + 亮度校正」的近似实现，不是犬类实测光谱响应曲线。犬与猫之间的差别以「保留锥体的光谱偏置」作参数化区分（犬偏黄、猫偏蓝绿），属示意性参数，不是实测数据。"
+    },
+    {
+      "id": "cat_color_conflict",
+      "text": "猫的色觉与人类显著不同，但猫的锥细胞数量在来源之间存在冲突。",
+      "source_ids": ["vetvision"],
+      "confidence": "conflict",
+      "caveat": "同一份兽医继续教育材料写「猫有 3 个锥细胞种群」，而主流动物视觉文献通常把猫列为二色视觉物种。本演示因此只声称「猫的色觉与人类显著不同」，不声称具体的锥细胞数量。"
+    },
+    {
+      "id": "flicker",
+      "text": "锥细胞的闪烁融合频率：人类约 60 Hz，动物为 70–80 Hz。",
+      "source_ids": ["vetvision"],
+      "confidence": "medium",
+      "caveat": "意味着人眼看着稳定不闪的光源，宠物可能感知为闪烁。该材料据此建议兽医诊室使用不闪烁的灯泡。本页的闪烁演示是慢放示意，不是真实频率复现（普通屏幕无法呈现 70–80 Hz）。"
+    },
+    {
+      "id": "cat_field",
+      "text": "猫的总视野估计约 200°（中央双眼视野 140°，两侧单眼视野各 30°）。",
+      "source_ids": ["vetvision"],
+      "confidence": "medium",
+      "caveat": "本页不提供人类视野数值作对比，因为本次研究的来源中没有给出可核对的人类视野数据。"
+    },
+    {
+      "id": "cat_low_light",
+      "text": "猫因角膜与瞳孔较大、且有照膜反光，引发视觉所需的阈值光强约为人类的 1/6。",
+      "source_ids": ["vetvision"],
+      "confidence": "medium",
+      "caveat": "同一机制也导致猫的视觉锐度低于人类：照膜反射的光子在眼内散射。"
+    },
+    {
+      "id": "pillars",
+      "text": "「健康猫科环境」的五大支柱：一个安全的地方；多个且相互分离的关键环境资源；玩耍与捕猎行为的机会；积极、一致且可预测的人猫互动；尊重猫的嗅觉重要性的环境。",
+      "source_ids": ["ellis2013", "aafp2021"],
+      "confidence": "high",
+      "caveat": "关键资源包括猫砂盆、食盆、饮用水、睡窝、抓挠面、躲藏空间与三维立体空间，且需分布在住宅内的多个位置。"
+    },
+    {
+      "id": "gap",
+      "text": "饲主的短板是「自认懂、实际读不准」：95% 的猫主人自认已了解如何为猫提供合适环境，但 42% 的英国宠物猫与另一只猫同住，其中 17%（约 180 万只猫）与「并不总能相处」的猫同住。",
+      "source_ids": ["pdsa2024"],
+      "confidence": "high",
+      "caveat": "数据来自英国全国代表性调查，中国本土暂无同类量化调研，跨文化效度未经检验。"
+    }
+  ],
+  "pillars": [
+    {
+      "id": "safe_place",
+      "label": "① 一个安全的地方",
+      "hint": "猫需要一个随时能躲进去、不被打扰、能观察到四周的封闭或高处空间。",
+      "checks": [
+        { "id": "sp1", "text": "家里有至少一处猫可以独处躲藏的封闭空间（猫窝／纸箱／柜顶）" },
+        { "id": "sp2", "text": "躲藏处不在人流通道上，不会被频繁打扰" },
+        { "id": "sp3", "text": "有一处高处可以俯瞰房间（猫爬架／柜顶／置物架）" }
+      ]
+    },
+    {
+      "id": "resources",
+      "label": "② 多个且相互分离的关键资源",
+      "hint": "每只猫都应有自己的一套资源，而且彼此分开、不要挤在一起。",
+      "checks": [
+        { "id": "rs1", "text": "猫砂盆数量 = 猫的数量 + 1" },
+        { "id": "rs2", "text": "食盆与水盆分开摆放，且不在猫砂盆旁边" },
+        { "id": "rs3", "text": "每只猫都有独立的睡窝与抓挠面" },
+        { "id": "rs4", "text": "同一类资源分散在房子里多个位置，而不是集中在一处" }
+      ]
+    },
+    {
+      "id": "play",
+      "label": "③ 玩耍与捕猎行为的机会",
+      "hint": "每天的互动式玩耍，是猫释放捕猎动机的主要出口。",
+      "checks": [
+        { "id": "pl1", "text": "每天有固定的互动玩耍时间（逗猫棒等）" },
+        { "id": "pl2", "text": "有可以独自玩的玩具，且会定期轮换" }
+      ]
+    },
+    {
+      "id": "interaction",
+      "label": "④ 积极、一致且可预测的人猫互动",
+      "hint": "让猫能预期会发生什么，并且由猫来决定互动的开始与结束。",
+      "checks": [
+        { "id": "in1", "text": "日常作息（喂食、玩耍、清洁）时间相对固定" },
+        { "id": "in2", "text": "互动时留意猫的肢体信号，它想结束就让它走" },
+        { "id": "in3", "text": "不使用惩罚性的方式管教" }
+      ]
+    },
+    {
+      "id": "smell",
+      "label": "⑤ 尊重猫的嗅觉的环境",
+      "hint": "气味是猫的主要信息通道，强烈的人造气味会造成干扰。",
+      "checks": [
+        { "id": "sm1", "text": "猫砂盆、食盆、睡窝定期清洁，但不用浓香型清洁剂" },
+        { "id": "sm2", "text": "家里没有持续的强烈香氛／精油扩散" },
+        { "id": "sm3", "text": "猫的抓挠痕迹不被立刻清除（那是它的气味标记）" }
+      ]
+    }
+  ],
+  "disclaimers": [
+    "本演示只可视化<strong>可核查的感官参数</strong>（色觉、听阈、闪烁融合频率、身体尺度），<strong>不声称知道猫或狗此刻在想什么</strong>。",
+    "「低视角」是<strong>示意</strong>，不是对宠物实际视野的物理重建。",
+    "色觉视图是<strong>二色觉近似模拟</strong>，不是物种实测光谱响应曲线；猫的锥细胞数量在来源之间存在冲突，本页不声称具体数量。",
+    "闪烁演示是<strong>慢放</strong>示意——普通屏幕无法呈现 70–80 Hz 的真实频率。",
+    "不做嗅觉模拟：目前没有消费级嗅觉显示设备，任何「闻到什么」的呈现都只能是叙事暗示。",
+    "不做「翻译宠物在说什么」：专业猫行为咨询师已指出，猫紧张焦虑的发声与发情或回应主人的声音十分相似，标准化翻译极易造成危险误判。",
+    "「五大支柱」自检清单是<strong>提示</strong>，不由照片自动判断，也不构成兽医或行为学诊断。",
+    "照片全程在浏览器本地处理，<strong>不会上传到任何服务器</strong>。"
+  ]
+}

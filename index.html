@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>伴侣视角 · 猫狗眼中的你家</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#f5f6f8;--card:#fff;--ink:#1b1f24;--ink2:#4d5866;--ink3:#7d8896;
+  --line:#e4e8ed;--accent:#0d7d72;--accent2:#0a5f57;--soft:#e7f4f2;
+  --warn:#fff7e6;--warnline:#e0b95f;--radius:14px;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 10px 26px -14px rgba(16,24,40,.2);
+}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.75;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px 72px}
+header.hero{padding:44px 0 26px;text-align:center}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 10px}
+h1{font-size:clamp(26px,4.4vw,40px);line-height:1.25;margin:0 0 14px;letter-spacing:-.01em}
+.sub{color:var(--ink2);font-size:15px;margin:0 auto;max-width:620px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:24px 26px;box-shadow:var(--shadow);margin-bottom:18px}
+h2{font-size:19px;margin:0 0 16px;display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
+.step{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;flex:0 0 26px;
+  border-radius:50%;background:var(--accent);color:#fff;font-size:14px;font-weight:700}
+h3{font-size:15px;margin:0 0 10px;color:var(--accent2)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.filebtn{position:relative;overflow:hidden;display:inline-block;background:var(--accent);color:#fff;
+  padding:10px 20px;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.filebtn:hover{background:var(--accent2)}
+.hint{color:var(--ink3);font-size:13px}
+.samples{display:flex;flex-wrap:wrap;gap:8px}
+.samples button{font:inherit;font-size:13px;padding:8px 14px;border-radius:9px;cursor:pointer;
+  border:1px solid var(--line);background:#fff;color:var(--ink2)}
+.samples button:hover{border-color:var(--accent);color:var(--accent)}
+.samples button.on{background:var(--soft);border-color:var(--accent);color:var(--accent2);font-weight:600}
+.note{color:var(--ink3);font-size:12.5px;margin:12px 0 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{font:inherit;font-size:15px;font-weight:600;padding:9px 28px;border:0;background:#fff;
+  color:var(--ink2);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:#fff}
+.chk{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;color:var(--ink2)}
+.views{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+figure{margin:0}
+figure canvas{width:100%;height:auto;display:block;border-radius:10px;background:#eef1f4;border:1px solid var(--line)}
+figcaption{font-size:13px;font-weight:600;margin-top:9px;color:var(--ink)}
+figcaption b{display:block;font-weight:400;font-size:11.5px;color:var(--ink3);margin-top:2px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.mini-box{background:#fafbfc;border:1px solid var(--line);border-radius:11px;padding:15px 16px}
+.mini-box p{font-size:12.5px;color:var(--ink2);margin:10px 0 0;line-height:1.65}
+.lamps{display:flex;gap:12px;justify-content:center;padding:6px 0 2px}
+.lampbox{text-align:center;flex:1}
+.lamp{width:100%;height:44px;border-radius:9px;background:#f6e6bd;border:1px solid #e2cf9a;
+  box-shadow:0 0 14px 2px rgba(246,230,189,.65)}
+.lamp.flash{animation:fl 0.36s steps(1,end) infinite}
+@keyframes fl{0%,49%{opacity:1}50%,100%{opacity:.18}}
+.lampcap{font-size:11px;color:var(--ink3);margin-top:5px;line-height:1.4}
+.hbar{margin:6px 0 12px}
+.hbar .lbl{font-size:12px;color:var(--ink2);display:flex;justify-content:space-between;margin-bottom:3px}
+.hbar .lbl b{font-weight:600;color:var(--ink)}
+.track{position:relative;height:12px;background:#eef1f4;border-radius:99px;border:1px solid var(--line)}
+.fill{position:absolute;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,var(--accent),#48b3a6)}
+.axis{position:relative;height:16px;margin-top:3px;font-size:10px;color:var(--ink3)}
+.axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.axis span:first-child{transform:none}
+.axis span:last-child{transform:translateX(-100%)}
+.pill{border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:10px;background:#fafbfc}
+.pill>h4{margin:0 0 4px;font-size:14.5px}
+.pill>.hint{font-size:12.5px;color:var(--ink2);margin:0 0 10px}
+.pill label{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;padding:5px 0;cursor:pointer;color:var(--ink2)}
+.pill input{margin-top:5px;flex:0 0 auto;width:16px;height:16px;accent-color:var(--accent)}
+.pill label.checked{color:var(--ink3)}
+.summary{margin-top:16px;padding:16px 18px;border-radius:11px;background:var(--soft);
+  border:1px solid #c9e6e2;font-size:15px}
+.summary b{font-size:22px;color:var(--accent2);margin:0 4px}
+#export{margin-top:14px;font:inherit;font-weight:600;font-size:14px;padding:11px 22px;border-radius:10px;
+  border:0;background:var(--accent);color:#fff;cursor:pointer}
+#export:hover{background:var(--accent2)}
+#export[disabled]{background:#c8d2da;cursor:not-allowed}
+details summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--accent2);list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ ";color:var(--accent)}
+details[open] summary::before{content:"▾ "}
+.claim{border-left:3px solid var(--accent);padding:2px 0 2px 14px;margin:16px 0}
+.claim p{margin:0 0 6px;font-size:14px}
+.claim .cv{font-size:12.5px;color:var(--ink2);margin:0}
+.claim .badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;
+  border:1px solid var(--accent);color:var(--accent);margin-left:6px;vertical-align:1px}
+.claim .badge.conflict{border-color:#c98a2a;color:#a86f13}
+.srcs{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+.srcs ol{margin:0;padding-left:20px}
+.srcs li{font-size:12.5px;color:var(--ink2);margin-bottom:6px;word-break:break-word}
+.srcs a{color:var(--accent2)}
+.warn-card{background:var(--warn);border-color:#f0dcae}
+.warn-card ul{margin:0;padding-left:20px}
+.warn-card li{font-size:13.5px;color:#6b5726;margin-bottom:7px}
+footer{text-align:center;color:var(--ink3);font-size:12.5px;padding:26px 0 0;line-height:1.8}
+.err{background:#fdecea;border:1px solid #f2b8b2;color:#8a2c22;padding:14px 16px;border-radius:10px;font-size:13.5px}
+@media(max-width:860px){
+  .views,.mini{grid-template-columns:1fr}
+  .card{padding:20px 17px}
+  .seg button{padding:9px 20px}
+}
+@media print{
+  .filebtn,.samples,#export,.seg,.chk{display:none}
+  .card{break-inside:avoid;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">伴侣视角 · 可演示原型</p>
+  <h1>猫狗眼中的你家</h1>
+  <p class="sub">同一张客厅照片，在猫／犬的色觉、身体尺度与感官条件下会是什么样。<br>
+  全部在你的浏览器里完成，<strong>照片不会上传到任何服务器</strong>。</p>
+</header>
+
+<section class="card">
+  <h2><span class="step">1</span>选一张自家照片</h2>
+  <div class="row">
+    <label class="filebtn">选择照片<input type="file" id="file" accept="image/*"></label>
+    <span class="hint">或直接用样例：</span>
+    <div class="samples" id="samples"></div>
+  </div>
+  <p class="note" id="loadmsg">支持 JPEG / PNG。iPhone 的 HEIC 在 Safari 可以打开，部分浏览器不行——失败时会有提示。</p>
+</section>
+
+<section class="card">
+  <h2><span class="step">2</span>选择物种与呈现方式</h2>
+  <div class="row">
+    <div class="seg" id="species">
+      <button type="button" data-sp="cat" class="on">猫</button>
+      <button type="button" data-sp="dog">犬</button>
+    </div>
+    <label class="chk"><input type="checkbox" id="dim"> 按昏暗环境显示（叠加暗视觉亮度示意）</label>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="step">3</span>三种视图</h2>
+  <div class="views">
+    <figure>
+      <canvas id="cvA"></canvas>
+      <figcaption>① 人眼所见<b>原始照片</b></figcaption>
+    </figure>
+    <figure>
+      <canvas id="cvB"></canvas>
+      <figcaption>② <span id="spB">猫</span>的色觉<b id="badgeB">二色觉近似模拟</b></figcaption>
+    </figure>
+    <figure>
+      <canvas id="cvC"></canvas>
+      <figcaption>③ 低视角 + 感官叠加<b id="badgeC">示意，非物理重建</b></figcaption>
+    </figure>
+  </div>
+  <p class="note" id="viewnote"></p>
+</section>
+
+<section class="card">
+  <h2>感官差异速览</h2>
+  <div class="mini">
+    <div class="mini-box">
+      <h3>慢放闪烁示意</h3>
+      <div class="lamps">
+        <div class="lampbox"><div class="lamp"></div><div class="lampcap">人眼所见<br>稳定不闪</div></div>
+        <div class="lampbox"><div class="lamp flash"></div><div class="lampcap">宠物可能所见<br>慢放示意</div></div>
+      </div>
+      <p>人眼约 <b>60 Hz</b> 就把闪烁融合成「不闪」；犬猫为 <b>70–80 Hz</b>。<span id="flickerNote"></span></p>
+    </div>
+    <div class="mini-box">
+      <h3>可听频率范围</h3>
+      <div id="hearing"></div>
+      <p>犬猫的听觉上限远高于人类——同一间屋子，是不同的声音世界。</p>
+    </div>
+    <div class="mini-box">
+      <h3>猫的视野与暗视觉</h3>
+      <p id="field"></p>
+      <p id="lowlight"></p>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="step">4</span>五大支柱自检</h2>
+  <p class="note" style="margin-top:0">来自 AAFP / ISFM 猫科环境需求指南。这里<strong>不由照片自动判断</strong>，请按你家的实际情况勾选。</p>
+  <div id="pillars"></div>
+  <div class="summary" id="summary"></div>
+  <button id="export" type="button" disabled>导出分享卡片</button>
+</section>
+
+<section class="card">
+  <details>
+    <summary>科学说明与来源（每条数值都可核对）</summary>
+    <div id="science"></div>
+  </details>
+</section>
+
+<section class="card warn-card">
+  <h2>本演示不做什么</h2>
+  <ul id="disclaimers"></ul>
+</section>
+
+<footer>
+  伴侣视角 · Team 2 ｜ Vibe Coding Camp 立项原型<br>
+  科学数据与完整研究见 <code>research_宠物视角VR立项_20261002.md</code>
+</footer>
+</div>
+
+<script id="science-data" type="application/json">{
+  "updated": "2026-10-02",
+  "project": "伴侣视角 · 可演示原型",
+  "tagline": "猫狗眼中的你家",
+  "human": {
+    "label": "人类",
+    "color": "三色视觉（蓝 / 绿 / 红三种锥细胞）",
+    "flicker_fusion_hz": "约 60",
+    "hearing": { "low_hz": 31, "high_hz": 8000, "best": "−10 dB SPL @ 2–4 kHz" }
+  },
+  "species": {
+    "cat": {
+      "label": "猫",
+      "color": "二色视觉；与人类三色视觉差异显著",
+      "flicker_fusion_hz": "70–80",
+      "hearing": { "low_hz": 58, "high_hz": 75000, "best": "−3 dB SPL @ 8–16 kHz" },
+      "visual_field": "总计约 200°（中央双眼视野 140° + 两侧单眼视野各 30°）",
+      "low_light": "引发视觉所需的光强阈值约为人类的 1/6（反过来说，人类需要约 6 倍光强）",
+      "eye_height_m": 0.25
+    },
+    "dog": {
+      "label": "犬",
+      "color": "二色视觉（蓝紫 + 红两种锥细胞），能看见颜色但无法区分绿色",
+      "flicker_fusion_hz": "70–80",
+      "hearing": { "low_hz": 67, "high_hz": 45000, "best": "0 dB SPL @ 2–8 kHz" },
+      "visual_field": null,
+      "low_light": null,
+      "eye_height_m": 0.35
+    }
+  },
+  "human_eye_height_m": 1.65,
+  "view_labels": {
+    "A": { "title": "人眼所见", "badge": "原始照片" },
+    "B": { "title": "色觉模拟", "badge": "二色觉近似模拟" },
+    "C": { "title": "低视角 + 感官叠加", "badge": "示意，非物理重建" }
+  },
+  "sources": [
+    { "id": "hearing2023", "title": "Sheep as a large animal model for hearing research（听阈对比表：人/犬/猫）", "url": "https://link.springer.com/article/10.1186/s42826-023-00182-3/tables/2", "date": "2023", "tier": 1 },
+    { "id": "vetvision", "title": "Do dogs really see in black & white? Facts & myths about animal vision（VetScienceWeek）", "url": "http://vetscienceweek.com.au/Microsite/pdf/full-paper_108.pdf", "date": "", "tier": 2 },
+    { "id": "aafp2021", "title": "2021 AAFP Feline Senior Care Guidelines（含「健康猫科环境五大支柱」与居家关键资源清单）", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10812122/", "date": "2021-06-25", "tier": 1 },
+    { "id": "ellis2013", "title": "Ellis SL, Rodan I, et al. AAFP and ISFM Feline Environmental Needs Guidelines. J Feline Med Surg 2013;15(3):219–230", "url": "https://doi.org/10.1177/1098612X13477536", "date": "2013", "tier": 1 },
+    { "id": "pdsa2024", "title": "PDSA PAW Report 2024（YouGov 全国代表性调查；58% 独居／42% 多猫、95% 自认已懂环境）", "url": "https://www.pdsa.org.uk/media/14944/pdsa_paw-report-2024.pdf", "date": "2024", "tier": 2 },
+    { "id": "plos2026", "title": "Gardeweg et al. Dog pain sign recognition in owners vs non-owners. PLOS ONE 2026（n=647）", "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0344512", "date": "2026-04-01", "tier": 1 },
+    { "id": "istraypaws", "title": "Xu et al. iStrayPaws: First-Person VR to Bridge Human-Animal Empathy. ACM VRST 2024", "url": "https://dl.acm.org/doi/10.1145/3641825.3687729", "date": "2024", "tier": 1 },
+    { "id": "anthropo", "title": "Anthropomorphism Revisited（批判性拟人化与拟人化争议）", "url": "https://comparative-cognition-and-behavior-reviews.org/wp/wp-content/uploads/2013/10/vol_2_commentary_timberlake.pdf", "date": "2007", "tier": 2 }
+  ],
+  "claims": [
+    {
+      "id": "hearing",
+      "text": "可听频率范围：人类 31 Hz–8 kHz，犬 67 Hz–45 kHz，猫 58 Hz–75 kHz（60 dB SPL）。",
+      "source_ids": ["hearing2023"],
+      "confidence": "high",
+      "caveat": "犬猫的听觉上限远高于人类，是「同一间屋子、不同的声音世界」最直接的证据。"
+    },
+    {
+      "id": "dog_color",
+      "text": "犬为二色视觉：两种锥细胞分别吸收蓝紫与红光谱，因此犬能看见颜色，但无法区分绿色。",
+      "source_ids": ["vetvision"],
+      "confidence": "high",
+      "caveat": "本页的色觉模拟是「合并红绿锥体通道 + 亮度校正」的近似实现，不是犬类实测光谱响应曲线。犬与猫之间的差别以「保留锥体的光谱偏置」作参数化区分（犬偏黄、猫偏蓝绿），属示意性参数，不是实测数据。"
+    },
+    {
+      "id": "cat_color_conflict",
+      "text": "猫的色觉与人类显著不同，但猫的锥细胞数量在来源之间存在冲突。",
+      "source_ids": ["vetvision"],
+      "confidence": "conflict",
+      "caveat": "同一份兽医继续教育材料写「猫有 3 个锥细胞种群」，而主流动物视觉文献通常把猫列为二色视觉物种。本演示因此只声称「猫的色觉与人类显著不同」，不声称具体的锥细胞数量。"
+    },
+    {
+      "id": "flicker",
+      "text": "锥细胞的闪烁融合频率：人类约 60 Hz，动物为 70–80 Hz。",
+      "source_ids": ["vetvision"],
+      "confidence": "medium",
+      "caveat": "意味着人眼看着稳定不闪的光源，宠物可能感知为闪烁。该材料据此建议兽医诊室使用不闪烁的灯泡。本页的闪烁演示是慢放示意，不是真实频率复现（普通屏幕无法呈现 70–80 Hz）。"
+    },
+    {
+      "id": "cat_field",
+      "text": "猫的总视野估计约 200°（中央双眼视野 140°，两侧单眼视野各 30°）。",
+      "source_ids": ["vetvision"],
+      "confidence": "medium",
+      "caveat": "本页不提供人类视野数值作对比，因为本次研究的来源中没有给出可核对的人类视野数据。"
+    },
+    {
+      "id": "cat_low_light",
+      "text": "猫因角膜与瞳孔较大、且有照膜反光，引发视觉所需的阈值光强约为人类的 1/6。",
+      "source_ids": ["vetvision"],
+      "confidence": "medium",
+      "caveat": "同一机制也导致猫的视觉锐度低于人类：照膜反射的光子在眼内散射。"
+    },
+    {
+      "id": "pillars",
+      "text": "「健康猫科环境」的五大支柱：一个安全的地方；多个且相互分离的关键环境资源；玩耍与捕猎行为的机会；积极、一致且可预测的人猫互动；尊重猫的嗅觉重要性的环境。",
+      "source_ids": ["ellis2013", "aafp2021"],
+      "confidence": "high",
+      "caveat": "关键资源包括猫砂盆、食盆、饮用水、睡窝、抓挠面、躲藏空间与三维立体空间，且需分布在住宅内的多个位置。"
+    },
+    {
+      "id": "gap",
+      "text": "饲主的短板是「自认懂、实际读不准」：95% 的猫主人自认已了解如何为猫提供合适环境，但 42% 的英国宠物猫与另一只猫同住，其中 17%（约 180 万只猫）与「并不总能相处」的猫同住。",
+      "source_ids": ["pdsa2024"],
+      "confidence": "high",
+      "caveat": "数据来自英国全国代表性调查，中国本土暂无同类量化调研，跨文化效度未经检验。"
+    }
+  ],
+  "pillars": [
+    {
+      "id": "safe_place",
+      "label": "① 一个安全的地方",
+      "hint": "猫需要一个随时能躲进去、不被打扰、能观察到四周的封闭或高处空间。",
+      "checks": [
+        { "id": "sp1", "text": "家里有至少一处猫可以独处躲藏的封闭空间（猫窝／纸箱／柜顶）" },
+        { "id": "sp2", "text": "躲藏处不在人流通道上，不会被频繁打扰" },
+        { "id": "sp3", "text": "有一处高处可以俯瞰房间（猫爬架／柜顶／置物架）" }
+      ]
+    },
+    {
+      "id": "resources",
+      "label": "② 多个且相互分离的关键资源",
+      "hint": "每只猫都应有自己的一套资源，而且彼此分开、不要挤在一起。",
+      "checks": [
+        { "id": "rs1", "text": "猫砂盆数量 = 猫的数量 + 1" },
+        { "id": "rs2", "text": "食盆与水盆分开摆放，且不在猫砂盆旁边" },
+        { "id": "rs3", "text": "每只猫都有独立的睡窝与抓挠面" },
+        { "id": "rs4", "text": "同一类资源分散在房子里多个位置，而不是集中在一处" }
+      ]
+    },
+    {
+      "id": "play",
+      "label": "③ 玩耍与捕猎行为的机会",
+      "hint": "每天的互动式玩耍，是猫释放捕猎动机的主要出口。",
+      "checks": [
+        { "id": "pl1", "text": "每天有固定的互动玩耍时间（逗猫棒等）" },
+        { "id": "pl2", "text": "有可以独自玩的玩具，且会定期轮换" }
+      ]
+    },
+    {
+      "id": "interaction",
+      "label": "④ 积极、一致且可预测的人猫互动",
+      "hint": "让猫能预期会发生什么，并且由猫来决定互动的开始与结束。",
+      "checks": [
+        { "id": "in1", "text": "日常作息（喂食、玩耍、清洁）时间相对固定" },
+        { "id": "in2", "text": "互动时留意猫的肢体信号，它想结束就让它走" },
+        { "id": "in3", "text": "不使用惩罚性的方式管教" }
+      ]
+    },
+    {
+      "id": "smell",
+      "label": "⑤ 尊重猫的嗅觉的环境",
+      "hint": "气味是猫的主要信息通道，强烈的人造气味会造成干扰。",
+      "checks": [
+        { "id": "sm1", "text": "猫砂盆、食盆、睡窝定期清洁，但不用浓香型清洁剂" },
+        { "id": "sm2", "text": "家里没有持续的强烈香氛／精油扩散" },
+        { "id": "sm3", "text": "猫的抓挠痕迹不被立刻清除（那是它的气味标记）" }
+      ]
+    }
+  ],
+  "disclaimers": [
+    "本演示只可视化<strong>可核查的感官参数</strong>（色觉、听阈、闪烁融合频率、身体尺度），<strong>不声称知道猫或狗此刻在想什么</strong>。",
+    "「低视角」是<strong>示意</strong>，不是对宠物实际视野的物理重建。",
+    "色觉视图是<strong>二色觉近似模拟</strong>，不是物种实测光谱响应曲线；猫的锥细胞数量在来源之间存在冲突，本页不声称具体数量。",
+    "闪烁演示是<strong>慢放</strong>示意——普通屏幕无法呈现 70–80 Hz 的真实频率。",
+    "不做嗅觉模拟：目前没有消费级嗅觉显示设备，任何「闻到什么」的呈现都只能是叙事暗示。",
+    "不做「翻译宠物在说什么」：专业猫行为咨询师已指出，猫紧张焦虑的发声与发情或回应主人的声音十分相似，标准化翻译极易造成危险误判。",
+    "「五大支柱」自检清单是<strong>提示</strong>，不由照片自动判断，也不构成兽医或行为学诊断。",
+    "照片全程在浏览器本地处理，<strong>不会上传到任何服务器</strong>。"
+  ]
+}</script>
+<script id="sample-data" type="application/json">[{"id":"sample-livingroom","label":"客厅","src":"data:image/png;base64,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"},{"id":"sample-multicat","label":"多猫家庭","src":"data:image/png;base64,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"},{"id":"sample-windowlamp","label":"有窗有灯","src":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA+gAAAKbCAIAAADpADdoAAAfkElEQVR4nO3dP6hk533H4bnLLczGrG8ujhEibNZqEjBsoYBxZVSYVJaSxiYp4qSw5cIQXKcQZgvXIuDCKxeJHUiwm6C4dCFICmPIFoIUUSHWQhjHCeu1SESK9U5YXzGanb9nZs6f9/u+z0MIlnR39ux7zz3nc3/7zrln795/awZAf87OrCa1+bt/+Kflf/yLP/uT6Y4FBjGfz8p3beoDAAAA9hPuAH0ybgdIdJbwl6XCHaCt6z4Aoddw4Q4AAAGEO0AroxoAoq/kwh2g/ms9ABVcz4U7QM1XeQCquaoLdwAACCDcAeoczABQ2bVduAPUdmUHoMorvHAHAIAAwh2gnmEMABVf54U7AAAEEO4ANYxhAKj+ai/cAbKv4wA0cs0X7gAAEEC4A6SOXgBo6sov3AHyrt0ANHj9F+4AABBAuAMkjVsAaPYuINwBACCAcAfIGLQA0Pi9QLgD7KfaAZj8jiDcAQAggHAH2MO4HYAS7gvCHQAAAgh3gF2M2wEo5O4g3AG2Uu0AlHOPEO4AABBAuANsZtwOQFF3CuEOAAABhDvABsbtAJR2vxDuAAAQQLgDrDJuB6DAu4ZwBwCAAMId4CnG7QCUee8Q7gAAEEC4A3zIuB2AYu8gwh0AAAIId4APGLcDUPJ9RLgDAEAA4Q7whHE7AIXfTYQ7AAAEEO4Axu0ABAzdhTsAAAQQ7kDr7G4HIOLOItwBACCAcAeaZtwOQMr9RbgDAEAA4Q60y7gdgKC7jHAHAIAAwh1olHE7AFn3GuEOAAABhDvQIuN2AOLuOMIdAAACCHcAAAgg3IHm2CcDQOJ9R7gDAEAA4Q60xbgdgNC7j3AHAIAAwh0AAAIId6Ah9skAkHsPEu4AABBAuAOtMG4HIPpOJNwBACCAcAcAgADCHWiCfTIApN+PhDsAAAQQ7kD9jNsBqOCudD5rzOUzt6Y+BGB8870f8cv//OkoRwIARzJxBwCAAMIdqN7+cTsAlL9bRrgDAEAA4Q4AAAGEO1A3+2QAqGS3jHAHAIAAwh2omHE7APUM3YU7AAAEaO4HMO3w9sNHUx8CY3juYsNp77NfpbO1ifsnN332ASCCiTvQSrUDQPRuGeEOAAABhDsAAAQQ7kCF7JMBoL7dMsIdAAACCHcAAAgg3AEAIIBwB2pjgzsAVW5zF+4AABBAuAMAQADhDlTFPhkAat0tI9wBACCAcAcAgADCHaiHfTIAVLxbRrgDAEAA4Q4AAAGEOwAABBDuQCVscAeg7m3uwh0AAAIIdwAACCDcAQAggHAHamCDOwDVb3MX7gAAEEC4AwBAAOEOAAABhDsQzwZ3AFrY5i7cAQAggHAHAIAAwh0AAAIIdyCbDe4ANLLNXbgDAEAA4Q4AAAGEOwAABBDuQDAb3AFoZ5u7cAcAgADCHQAAAgh3AAAIINwBACCAcAdSeWcqAE29P1W4AwBAgPOpDwAAWPWx939U1KL81R9/9Kl/LuzwfnX9c1MfAozBxB0AAAIIdwAojhGytYJ1wh0AAAIIdyCSR8oA0NqDZYQ7AAAEEO4AUCLb3K0SrBDuAAAQQLgDAEAA4Q4AAAGEO5DHI2VohG3u1geWHywj3AEAIIBwBwCAAMIdAAACCHcAKJdt7lYGFoQ7AAAEEO4AABBAuANhPAsSgDafCCncAaBotrlbE7gi3AEAIIBwBwCAAMIdAAACCHcAKJ1t7lYDhDsAAGQwcQcAgADCHQAAAgh3IImfvkSzbHO3DjTu7Ey4AwBAAhN3AAAIINwBACDA+dQHAAB08qvrn/vY+z8aZ7F+6/de6P7B//vTN2ajsNGfxgl3AOCwUt/9a0freGiNcAeAdp3S63tfU8FDv4Q7ADRniF7f8bsoeOiFcAeAhra5j5PsG3/TE/PdBncQ7gDQhEmSff0ATN/haMIdACo3ebIvk+9wNM9xB4CaFVXthR8VFM7EHYhxNptPfQiQtM298Dg+aPRugzuYuANAnQqv9rjjhBLYKgMAtcmq4ayjhQkJdwCoSmIHJx4zjE+4A0CYHRu+cwt4x5Hb4A5XhDsAVCK32us4fhiacAcAgADCHQBqUMe4uo4/BQxEuANAnpVt3zX17sqfxQZ3WBDuAAAQQLgDQLaaxu21/omgF8IdAAACCHcAiNTC5u8W/ozQnXAHgGC17iqp9c8FpxDuAAAQQLgDAEAA4Q4AqereAl73nw6OINwBACCAcAcAgADCHQAAAgh3AAAIINwBACCAcAeAYD/7r/NZjWr9c8EphDsAAAQQ7gAAEEC4A0C2+naV1Pcngl4IdwAACCDcASBeTSPqmv4s0C/hDgA1qKN36/hTwECEOwAABBDuAFCJ9HF1+vHD0IQ7ANQjt31zjxxGI9wBoCqJBZx4zDA+4Q4Atcnq4KyjhQkJdwCoUEoNpxwnlMBXCxBjPjs7m82nPgqIcdXEz/7Oo1mRJDscysQdAGpWZh+XeVRQOF82AFC5okbvkh2OJtwBoAmT57tkhxMJdwBoyCT5LtmhF8IdAJqzKOlBC16vQ7+EOwC0a4iC1+swEOEOAKzW9kEdr9RhHMIdAFilxaFAnuMOAAABhDsAAAQQ7gAAEEC4A0nms7OpDwEAJjCfC3cAAEhg4g4AAAGEOwAABBDuAAAQQLgDAEAA4Q4AAAGEOwAABBDuAAAQQLgDYfwMJgBaM58/+f/CHQAAAgh3AAAIINwBACCAcAcAgADCHQAAAgh3AAAIINyBPJ4ICUBrz4IU7gAAkMHEHQAAAgh3AAAIINwBACCAcAcAgADCHYjkwTIANPVIGeEOAAAZTNwBACCAcAcAgADCHQAAApxPfQAFee7CarTLZz/T0ht2AKB2Ju5ArrOpDwAARnqkjHAHAIAMJu4AABBAuAMAQADhDgAAAYQ7EM37UwFo4p2pHgf5lLcfPhrxc0FZT3702c91dshDIT/pqa8AxDJxBwCAAMIdAAACCHcg29w2dwAa2OAu3AEAIIOJOwAABBDuAAAQQLgD8WxzB6D6De7CHQAAMpi4AwBAAOEOAAABhDtQA9vcAah7g7twBwCADCbuAAAQQLgDAEAA4Q5UwjZ3ACre4C7cAQAgg4k7AAAEEO4AABBAuAP1sM0dgFo3uAt3AADIYOIOAAABhDtQFbtlAEi0d5+McAcAgAwm7gAAEEC4A7WxWwaA+vbJCHcAAMhg4g4AAAGEOwAABBDuQIVscwegsg3uwh0AADKYuAMAQADhDtTJbhkAatonI9wBACCDiTsAAAQQ7kC17JYBoJp9MsIdAAAymLgDNTN0B6COcbtwBwCADCbuAAAQQLgDlbNbBoAK9skIdwAAyGDiDgAAAYQ7UD+7ZQBI3ycj3AEAIIOJO9AEQ3cAosftwh0AADKYuAMAQADhDrTCbhkAcvfJCHcAAMhg4g405WzqAwCgUfPTxu3CHQAAMpi4AwBAAOEOtMZuGQDy9skIdwAAyGDiDjTI0B2AsHG7cAcAgAwm7gAAEEC4A22yWwaApH0ywh0AADKYuAPNMnQHIGbcLtwBACCDiTvQMkN3ADLG7cIdAAAymLgDjTN0ByBg3C7cAQAgg4k7gKE7AKWP24U7AABkMHEHsNMdgNLH7cIdAAAymLgDDDsgAaAd8yHvJsIdAAACCHeADxi6A1DyfUS4AwBAAOEO8CFDdwCKvYMIdwAACCDcAZ5i6A5AmfcO4Q4AAAGEO8AqQ3cACrxrCHcAAAgg3AE2MHQHoLT7hXAHAIAAwh1gM0N3AIq6Uwh3AAAIINwBtjJ0B6Cce4RwB9hFuwNQyN1BuAMAQADhDrCHoTsAJdwXhDsAAAQQ7gD7GboDMPkdQbgDdKLdAZhPV+3CHQAAMpi4A3Rl6A7Qsvmk43bhDgAAGUzcAZLGLQA0e/0X7gB5124AGrzyC3cAAAgg3AFSRy8ANHXNF+4A2ddxABq52gt3AAAIINwBahjDAFD9dV64AwBAgPOpDwAg2Hw+Ozub+iAA+vaVf35l479/7cU77Sz2vLBxu3AHOJV2B6rv9fUPqL7g5+VVu3AHAGB/sm/8+OrzvTS2ygCcytAdaKral39h93bf8buU9g3AvMhx+2w2O3v3/luzllw+c2vbf3r74aNxj4VpPHex4ftVn/2WP/tXHvz8/okvbrM70FS1d8zug16/hIKfl1rtnioD0MS1HmCgat/9IsftwJnQvOwrua0yAAAUtP2mkNF7gTzHHaCVUQ3AQOPtlZc6/ZUnGb3Pi7+GC3eAtq77AIPqq7lHbvd5wtVbuAMAQADhDtDi2AZgCP2OyUcbus9DrtvCHaDdewAA85wrtnAHaP1OALSpxye35D4EZh51rRbuAAAQQLgDDCVrkAM0qJdJuXH7aIQ7wIC0O1C4E7N75Zf3G/GDfkswD5ytCHeAYSXeG4CmHN3HZu0jO3v3/luzllw+c2vbf3r74aNxj4VpPHdxvv4vffZb/uxfefDz+8P9vmdnw702wASPX9yd7L08xtG4fd3WexgAfZnPtTsQ4OHP3rv6HxfP3jglpl978c6J7a7aNxLuAGPQ7kBiwf/gq6+e8grbvgGYcPvNPHn7oj3uACOJvlsA1fvCt7++8m+OrvbFSy2+AehIte9m4g4AwFDfACxafMfmmdw3uY5MuAOMx4YZIMVx4/aVal9+kcnrfJ7/1562ygCMqoI7B9DCPpnTX+TonTZDmFdx7RXuAGOr4/4BsEy1j0C4A0xAuwMlO3RYrtrHIdwBAJp24j6Zkqu9Mt6cCjANb1QF0vX4BMmBzOvammjiDjCZyu4oQFPxrdrHZ+IOMCVzdyBR+dtj5jVORoQ7wMS0O1COLgneY7UP9FOZ5jVWu3AHKIJ2B1LeltpLte/o9fWPObTg55VWuz3uAKWo+E4DVGO0aj/64+dVX0ttlQEohbk7MK3dIX56tR+a7Cu/8LV9o/e6q93EHQCgUQftk5mw2nt8hXQeBwlQkOrHRUCiEqp97+u0cP0U7gBlaeHeA0yu+1PYy3/y46yZK6dwByhOI3cgoHyTvBv10FebN3PN9OZUgBJ5oyowpvUiL/8Ho7ZW7SbuAOVq6m4EFPW2VNVeJhN3gHKZuwPji9jUPmtyuiHcAYqm3YGhLad5v9V+9WoXz96Y9W3eXrULd4AA2h0YZ59ML9W+/voPf/Zej+3+2ot32qx24Q6QQbsDQzux2g/6cU6nmLda7cIdIIZ2B0637V2nx1V791jva+h+9/N3Zg2zxx0ghnYHhnBotR8xXL96zRMf6H637WoX7gBhtDvQox989dWO1X50rC977cU7x+V7y/val529e/+tWUsun7m17T+9/fDRuMfCNJ672PAXTT77LX/2rzz4+f1ZjrOzqY8ACLQ3vrv8GKa9umyzOajdVfuCrTIAeczdgd4tgnugWF8fve8u+MXHmLUvCHeASNodGHTPTMdfdeLvu6jzbVT7MuEOkEq7A93t7vLu1T7mD1JV7SuEe6fNr1TPZ59Q2h0Yx5i9fkW1r5OqANm0OzDQT0caP9YXVPtGwh0gnnYHejRhr19R7dt4HCRA3uMgN/KMSODoufvksb6g2ncQ7gCVhLt2P85/fOXLPX8awv3+a9+Z+hAYRJlvP12h2nezVQagHvbMAKc/8LHjz1LtnWrfS7gDVEW7A/0+rH35lwwX8aq9i2udPgqAHO5/wDbr5X1Qi3/h219f/F+Pi+yq1ZE97gD17HFf4e2qXdjjvsIe98L9+7f++vQX+cb5+0/946Pr2/5TR0dP4iX7QZrbKlPlvRlgI9tmgI2+8ej6cqB/4/z9RbsvR3z3jj9uO83uan/5h69s/Pd3P39n1qrmJu4ArTF3383EvfvE/d/+/EuzQH/4ve/OKtLLxH3v3H3dp772zSO2x+yI+G3Vvq3X1zVY8M1N3AFaY+4OHDp331vhRzygZvmXb6z27sm+/PFN5buJO0ATzN23MXFfYeLe1NC949z9U1/75o5XOGIS//2XXz2x2pe10+4m7gBNMHcHepm79zKJ/+Ldpz7s4tkbp3x2Xv7hK420u3AHaIV2BwZq91Mi/sRqb6rdhTtAQ672ldo2AwzX7qdEPLsJd4DmGL0D47T74pqzvKl9eZ9ML+P2dobuwh2gRdodGKfd1x8gsxzxp7wntUHXpj4AAKbhBxYC6477AUyuM+MQ7gDtms/lO+TZ/XDGQtrd5WUIwh2gdUbvwO52P/Stpa4qAxHuALjLAvvbvWO+H1TtPb6d9G7t70wV7gB8wN9rAxveq3rI6N1lZGgm7gB8yF9wAzsex76j3Y++evQyKb/bwLhduAOwSrsDh7b7ideNE7P7bhvVLtwB2MDfd0PjD5ZZ/422tXtfl4uj4/tuM9Uu3AHYyugdWLbe7v1eJe5+/s5BFX73wI+vgJ+cCsBWfsAqsOwHX311eZ/MF+9+ffnHoPZi0eLbfqjq3cZifZlwB2CXq4na2ZlVAkZq9ystB/o2nioDwH62zQCLq8FKqX/x7mE/nomjmbgD0InROzRu+Rv477/86nKvL8/dbXEZjnAH4AB2vUOb1v/abaXdt/X6+gfYA3M0W2UAOIxtM9DIEyEXv8W2r/qrKfvFszcunr3R/WVf/uEreyufjYQ7AAfzoHdoxN4v9oOSfZl2P4JwB+BIRu/Q+Nf4ifGt3Q8l3AE4ntE7NKuX7NbuBxHuAJxKvgOMQLgD0A87Z6AdPU7KDd278zhIAHrzL98b/DEXvfvE1AcQ9Em8PouUeFp2dDnw6//r329fuouBf282Ee4ANO0Xn31u6kOI8f4f/cHUh8BTHtz46OV7/zPQojy48VHLXRpbZQAAIIBwBwCAAMIdAIDDfOnhRwp8qerZ4w4AkMpO9KaYuAMAMM2k3Lj9IMIdAIAJslu1H0q4AwAwdnyr9iOc/c3Lnz3m1wHAmk/c9Ex0aNR3L/7v6GT/xTtvD3BEFfLmVAAATrXI8W0Fb8R+OuEOAEBvBPpwzm/evDngyzfmwYMHs9ns8vJy6gOpgcW0mGVyZu7W9W/KAZbI0Y68ORUAAAII996Yw/XIYlrMMjkzAZiQcAcAgADCHQAAAgh3AAAIINwBACCAcAcAgADCHQAAAgh3AAAIcD71AVTC050tZpmcmRYzyH8/eO+UX/7xyxv9HQu0yNdg+YQ7AL35yOzRVN9Srv/W186buMf98jeL+du9LmazJlnMx486fdWUb+Vr0ORoCE1c1ABo0FUPNZLvJKom2RmNyxkATbSRgqcQep2jCXcAmmAAz+QkOycS7gA0xACeCc86OJFwB6BFCp7RzjHoi3DvgfdN98hiWswyOTMrXszoLTQeKVPmYkr20r7MqxF5nQKAfhnA0+NZBAMR7gDwIQXPofQ6oxHuALCnxkI30jAcsc4kXIkAYA9jeFbOBJiEcAeArhR8m/Q6hRDuAHAwG2mqJ9YpkHAHgJOI+Gr8+tEjvU7JhPupPKm0RxbTYpbJmWkxy4x4D3Hv8VPmy7xHFnM4wh0ABmESXyxjdUIJdwAYnIifnFinAsIdAKYsSA+JH2edoQLCHQDK6ksp38syQn2EOwCURcofsUTQAuEOAKVruVNb/rPDCuEOAJF+/Zui3di1cZtt1Dl0EfaFXRpPKrWYZXJmWswyOTNHW8wuHTxa3Jcf5c5Mi5lCuANAi8rvaWDFtdV/AQAAlEe4AwBAAOEOAAABhDsAAAQQ7gAAEEC4H8/To3pkMS1mmZyZFrNMzkyLWSZn5tCEOwAABBDuAAAQQLgDAEAA4Q4AAAGEOwAABBDuAAAQQLgDAEAA4X4kTyrtkcW0mGVyZlrMMjkzLWaZnJkjEO4AABBAuAMAQADhDhvce3y72HUp+dgAgOEId0jq4zKPCgAYgXCHrVQyAFAO4Q4x7V7UwQAAIxPux/DAo+oX8/lrb5aWy10Oo8zFDGUxLWaZnJkWs2RuQEMT7rDf5O0++QEAAJMT7tDJvce31TMAMCHhDgeYpN19wwAACHcoPaM3/nZSHgAaZOIOBxutmwU6ALAg3GH/g2XWSWoAYGTCHY40dLv73gAAWCbcD+YZuj1KX8zh2vqIV05fzKJYTItZJmemxSyZG9AIhDucxFwcABiHcIfi2t03AwDAOuEOZaW2agcANhLuUFBwq3YAYBvhDkc+EXLdvce3lTcAMJDzoV4YWnXv8e1F8e/t+OXvDUQ/ALCDcD+MR3H1qOLF7J7gfcV6xYs5PotpMcvkzLSYYKsMAAAEEO4AABBAuAMAQADhDn0+WGY03skKAK0R7gAAEEC4AwBAAI+DhP08bR0AmJyJ+wE8Q7fNxSy/2oMWs3wW02KWyZlpMUG4wwHKrHYAoBEm7tCJagcApiXcIU+xD6kEAIYj3CFv3H7v8W3tDgCtEe4QVu0lHxUAMBzhDgAAAYQ7pA62Sz42AKB3wr0rz9DtkcW0mGVyZlrMMjkzLSZc8ZNTIXikfe/x7VuzN2Y5Xn/ng58S9dLNJz80CgDozsQdmLLgAYCOTNzh1HH7d//2O1f/40t/+eXjVvOUV7h/8cKth28kxvrVPxq9A0BHwh2Otwju5X88KL5Pf4V08h0AOrJVBph+b4ydMwCwl3CHI60My/f++yFeoSbaHQB2E+6deBRXa4tZ/vNklt2/eGFWRZRP2+4RZ2YKi2kxy+TMJJ1wBwpi7g4A2wh3ONK2t5B2f2vp6a+Q4qWbD7o/Peb1dy7lOwCsE+5Aofk+8OEAQBiPg4TjXY3GT3kK++mvEOelmw9EOQAcQbjDqU6v7RZ6fdnV3H1vvr/+zqUfzwQAC7bKANPoEuVm8wCwINyByWh3AOhOuO/nsa89spiU2e7OTItZJmemxYRlwh2YmI3sANCFN6fCIP70+tbviv/x/ccj/6jX56+9OQt/1Iw3qgKAiTsMUrrb6nyIat/r3uPby/83y5y7e6MqAI0zcYfmLLd7UcN4j3gHgB1M3GEo68P1Scbtu5U2ht89dzd0B6BlJu7AE4t2L2oGDwAsmLjv4VFczS5mL/26PGIvcNy+0eQD+PGH7llnZuEspsUskzOTOgh3oMR8BwBWCHcYY+ieMm4vJN/tdAeAdcIdBhda7Qum7wBQAuEOu3in5sLIo3c/ThUAVgh3IG/07rmQADRIuMMehu4rRmt3Q3cAWCbcYT/tvqKQuTsANEW47+Kxrz2ymJWppt2dmRazTM5MiwnrhDt0YuhecbsDQAThDl1p9/Hbfcc2d+9PBaA151MfACR5/tqbxswr7j2+7VsaevG7l9etJBT+NWgT17RM3OEwInWdb2YAYAQm7pP5ybXPzJry8VlpPv34x8f9QnN3AGB8wn0CzSV72Z+I4/L9au5u0rxgwwwADM1WmbF3can20pzyGbFtZlnitzE2a1rMMjkzLWaZnJmTE+6jUu1Vtrt8BwBGINzHo9pL5rPT7NAdAFIIdwAACCDcR2KgW/HnyJjZagDACIQ7AAAEEO5AuV5/Z+tjnV66+eS5TwDQDuEOAAABhPtmnlRKRza4566JL3OLWSZnpsUskzOzBMIdAAACCHcgb4M7ADRIuAN5vDMVgAYJd6BExu0AsEK4AwBAAOEOhI3b7ZMBoE3CfQMPPILq+TK3mGVyZlrMMjkzCyHcgbIYtwPARsIdTvL8tTetoDUBgBEId6Agxu0AsI1wB0rhEZAAsINwBzKq3cNkAGiccIdT2eZ++mqodgDYS7gDE7NDBgC6EO6rPKmUIxi6H70OXaq9900yvswtZpmcmRazTM7Mcgh3YDKTVDsAhBLu0A9D90NXQLUDwEHOD/twYLvnr7157/HtNlfooGrvuKndrB0Alpm4A6PyVlQAOI6JO/SpzaF7x3H7Qclu3A4AK4Q79Ky1du9S7ZIdAE5nqwz0r503qqp2ABiNcH+KJ5XSlxbavfc/4zjbY3yZW8wyOTMtZpmcmUUR7jCUuts9tNoBIJdwhwHV2u4H/bm6FLlqB4C9vDkVhlXfe1X7/W5EsgNAR8IdGDzZX7r5YP3BMpIdAA5iqwzQiUE7AEzLxB0YI9kXQ3eDdgA4jnD/kAceQfVTdl/mFrNMzkyLWSZnZmmEO9DQ83AAIJdwB54i2QGgTMIdSjHtgyP1OgAUTrhDQRb1PFrB63UASCHcoUTLPd17xIt1AEgk3KF0tx6+cf/ihVNeQakDQAWEO9RDoANAxfzk1A94Uikln5n0uJiXl09+DhQWsxzOTItZJmdmgYQ7AAAEEO4AABBAuAMAQADhDgAAATxVBgIe9uJxMQCAiTsAAAQQ7k944BFlcmZazDI5My1mmZyZFrN6wh0AAAIIdwAACCDcAQAggHAHAIAAwh0AAAIIdwAACCDcAQAggHD32FcK5YHEFrNMzkyLWSZnpsVsgXAHAIAAwh0AAAIIdwAACCDcAQAggHAHAIAAwn0kn37847F+K47kcwQAlKz1cPf0KMrkzLSYZXJmWswyOTMtZiNaD/cxGeiWzGcHACiccB+VOiyTzwsAUD7hPjaNWBqfEQAgwvnUB9BuKf7k2memPpDWSXYAIIhwn0x91ei9QQAAw7FVBgAAAgh3AAAI0HS429phMcvkzLSYZXJmWswyOTMtZjuaDncAAEgh3AEAIIBwBwCAAMIdAAACCHcAAAgg3AEAIIBwBwCAAO2Gu8e+WswyOTMtZpmcmRazTM5Mi9mUdsMdAACCCHcAAAgg3AEAIIBwBwCAAMIdAAACCHcAAAjQaLh7epTFLJMz02KWyZlpMcvkzLSYrWk03AEAIItwBwCAAMIdAAACCHcAAAgg3AEAIIBwBwCAAMIdAAACtBjuHvtqMcvkzLSYZXJmWswyOTMtZoNaDHcAAIgj3AEAYFa+/wcbI1zCXdiGtwAAAABJRU5ErkJggg=="}]</script>
+<script>
+(function(){
+"use strict";
+
+/* ---------------------------------------------------------------- 数据装载 */
+var SCIENCE = null, SAMPLES = [];
+try { SCIENCE = JSON.parse(document.getElementById('science-data').textContent); } catch(e) { SCIENCE = null; }
+try { SAMPLES = JSON.parse(document.getElementById('sample-data').textContent); } catch(e) { SAMPLES = []; }
+
+if (!SCIENCE || !SCIENCE.pillars) {
+  document.querySelector('main, .wrap').insertAdjacentHTML('afterbegin',
+    '<div class="err"><b>数据未内联。</b>请先运行 <code>python tools/render_reference.py</code> 把 science.json 与样例照片写入本页。</div>');
+  return;
+}
+
+/* ---------------------------------------------------------------- 变换数学
+   与 tools/render_reference.py 中的 numpy 实现完全一致：
+   线性 sRGB -> LMS(Hunt-Pointer-Estevez) -> 合并中/长波锥体 -> 回线性 RGB
+   -> 亮度校正回原始值 -> 按亮度降饱和 ->（可选）暗视觉亮度增益 -> 回 sRGB
+
+   亮度校正是必要的：合并锥体通道本身会改变亮度（红会变暗），若不校正，
+   观众看到的是「变暗」而不是「色觉不同」。本模拟展示的是色觉差异。
+
+   lmix 合并中/长波锥体时 M（绿）通道的权重：犬的保留锥体偏黄、猫偏蓝绿。
+   tint 线性 RGB 乘子，参数化表达该光谱偏置——属示意性参数，不是实测数据。 */
+var LMS_M  = [0.38971, 0.68898, -0.07868,
+             -0.22981, 1.18340,  0.04641,
+              0.0,      0.0,      1.0];
+var LMS_MI = [ 1.91020, -1.11212, 0.20191,
+               0.37095,  0.62905, 0.0,
+               0.0,      0.0,     1.0];
+var SPECIES = {
+  cat: { sat: 0.65, gain: 1.25, lmix: 0.38, tint: [0.96, 1.03, 1.05] },
+  dog: { sat: 0.72, gain: 1.05, lmix: 0.50, tint: [1.05, 1.00, 0.95] }
+};
+
+function s2l(c){ c/=255; return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); }
+function l2s(c){ c = c<0?0:(c>1?1:c); var s = c<=0.0031308 ? c*12.92 : 1.055*Math.pow(c,1/2.4)-0.055;
+  var v = Math.round(s*255); return v<0?0:(v>255?255:v); }
+function clampScale(v){ return v < 0.4 ? 0.4 : (v > 2.5 ? 2.5 : v); }
+
+function transformPixels(data, species, dim){
+  var p = SPECIES[species] || SPECIES.cat, sat = p.sat, gain = dim ? p.gain : 1;
+  var mix = p.lmix, t0 = p.tint[0], t1 = p.tint[1], t2 = p.tint[2];
+  for (var i = 0; i < data.length; i += 4){
+    var r = s2l(data[i]), g = s2l(data[i+1]), b = s2l(data[i+2]);
+    var y0 = 0.2126*r + 0.7152*g + 0.0722*b;                 // 原始相对亮度
+    var L = LMS_M[0]*r + LMS_M[1]*g + LMS_M[2]*b;
+    var M = LMS_M[3]*r + LMS_M[4]*g + LMS_M[5]*b;
+    var S = LMS_M[6]*r + LMS_M[7]*g + LMS_M[8]*b;
+    var merged = L * (1 - mix) + M * mix; L = merged; M = merged;   // 合并中/长波锥体
+    var r2 = LMS_MI[0]*L + LMS_MI[1]*M + LMS_MI[2]*S;
+    var g2 = LMS_MI[3]*L + LMS_MI[4]*M + LMS_MI[5]*S;
+    var b2 = LMS_MI[6]*L + LMS_MI[7]*M + LMS_MI[8]*S;
+    var sc = clampScale(y0 / ((0.2126*r2 + 0.7152*g2 + 0.0722*b2) || 1e-6));
+    r2 *= sc; g2 *= sc; b2 *= sc;
+    r2 *= t0; g2 *= t1; b2 *= t2;                            // 物种光谱偏置
+    var y2 = 0.2126*r2 + 0.7152*g2 + 0.0722*b2;
+    var sc2 = clampScale(y0 / (y2 || 1e-6));
+    r2 *= sc2; g2 *= sc2; b2 *= sc2;
+    var lum = y2 * sc2;
+    var o0 = lum + (r2 - lum) * sat,
+        o1 = lum + (g2 - lum) * sat,
+        o2 = lum + (b2 - lum) * sat;
+    if (gain !== 1){ o0 *= gain; o1 *= gain; o2 *= gain; }
+    data[i]   = l2s(o0);
+    data[i+1] = l2s(o1);
+    data[i+2] = l2s(o2);
+  }
+  return data;
+}
+
+/* ---------------------------------------------------------------- 图像工具 */
+var MAXLEN = 1600;
+var state = { img: null, species: 'cat', dim: false, checks: {} };
+
+function fitCanvas(cv, w, h){ cv.width = w; cv.height = h; }
+
+function drawScaled(src, cv){
+  var w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
+  var k = Math.min(1, MAXLEN / Math.max(w, h));
+  var tw = Math.max(1, Math.round(w*k)), th = Math.max(1, Math.round(h*k));
+  fitCanvas(cv, tw, th);
+  var c = cv.getContext('2d');
+  c.clearRect(0,0,tw,th);
+  c.drawImage(src, 0, 0, tw, th);
+  return cv;
+}
+
+// 视图③：先裁掉上部模拟低视角，再套用物种色觉与亮度示意
+function drawViewpoint(src, cv){
+  var w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
+  var k = Math.min(1, MAXLEN / Math.max(w, h));
+  var tw = Math.max(1, Math.round(w*k)), th = Math.max(1, Math.round(h*k));
+  fitCanvas(cv, tw, th);
+  var c = cv.getContext('2d');
+  var top = Math.round(th*0.18), bot = Math.round(th*0.04);
+  c.drawImage(src, 0, Math.round(top/k), w, Math.round((h - (top+bot)/k)),
+              0, 0, tw, th);
+  var img = c.getImageData(0,0,tw,th);
+  transformPixels(img.data, state.species, state.dim);
+  c.putImageData(img, 0, 0);
+}
+
+function render(){
+  if (!state.img) return;
+  var cvA = drawScaled(state.img, document.getElementById('cvA'));
+  var cvB = drawScaled(state.img, document.getElementById('cvB'));
+  var cB = cvB.getContext('2d');
+  var d = cB.getImageData(0,0,cvB.width,cvB.height);
+  transformPixels(d.data, state.species, state.dim);
+  cB.putImageData(d, 0, 0);
+  drawViewpoint(state.img, document.getElementById('cvC'));
+
+  var label = SCIENCE.species[state.species].label;
+  document.getElementById('spB').textContent = label;
+  var extra = state.dim ? '（含暗视觉亮度示意）' : '';
+  document.getElementById('badgeB').textContent = '二色觉近似模拟' + extra;
+  document.getElementById('badgeC').textContent = '示意，非物理重建' + extra;
+  document.getElementById('viewnote').textContent =
+    '视图②为「合并红绿锥体通道」的近似实现，不是' + label + '的实测光谱响应曲线；'
+    + '为避免把「色觉差异」误读成「变暗」，模拟在保持亮度的前提下改变色度。'
+    + '视图③是低视角示意，不做物理重建的宣称。';
+  document.getElementById('export').disabled = false;
+}
+
+function loadSrc(src, name){
+  var img = new Image();
+  img.onload = function(){
+    state.img = img;
+    document.getElementById('loadmsg').textContent = '已载入：' + name + '（本地处理，未上传）';
+    render();
+  };
+  img.onerror = function(){
+    document.getElementById('loadmsg').innerHTML =
+      '<b>这张图片无法解码。</b>iPhone 的 HEIC 格式在部分浏览器（如 Chrome）无法读取，'
+      + '请改用 JPEG／PNG，或直接点上面的样例照片继续演示。';
+  };
+  img.src = src;
+}
+
+/* ---------------------------------------------------------------- 交互绑定 */
+document.getElementById('file').addEventListener('change', function(e){
+  var f = e.target.files && e.target.files[0];
+  if (!f) return;
+  if (!/^image\//.test(f.type) && !/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)){
+    document.getElementById('loadmsg').innerHTML = '<b>这不是图片文件。</b>请选择 JPEG 或 PNG。';
+    return;
+  }
+  if (f.size > 25*1024*1024){
+    document.getElementById('loadmsg').innerHTML = '<b>图片太大了（>25 MB）。</b>请换一张小一点的。';
+    return;
+  }
+  var fr = new FileReader();
+  fr.onload = function(){ loadSrc(fr.result, f.name); };
+  fr.onerror = function(){ document.getElementById('loadmsg').textContent = '读取文件失败，请重试。'; };
+  fr.readAsDataURL(f);
+});
+
+(function(){
+  var box = document.getElementById('samples');
+  if (!SAMPLES.length){
+    box.innerHTML = '<span class="hint">（样例未内联，运行 tools/render_reference.py）</span>';
+    return;
+  }
+  SAMPLES.forEach(function(s, i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = s.label;
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(box.children, function(c){ c.classList.remove('on'); });
+      b.classList.add('on');
+      loadSrc(s.src, s.label + '（示意图样）');
+    });
+    box.appendChild(b);
+    if (i === 0) state._first = b;
+  });
+})();
+
+(function(){
+  var seg = document.getElementById('species');
+  seg.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-sp]');
+    if (!b) return;
+    Array.prototype.forEach.call(seg.children, function(c){ c.classList.remove('on'); });
+    b.classList.add('on');
+    state.species = b.getAttribute('data-sp');
+    render();
+    renderHearing();
+  });
+})();
+document.getElementById('dim').addEventListener('change', function(e){
+  state.dim = e.target.checked; render();
+});
+
+/* ---------------------------------------------------------------- 听阈图 */
+function logX(v){
+  var lo = Math.log10(20), hi = Math.log10(100000);
+  return (Math.log10(v) - lo) / (hi - lo) * 100;
+}
+function renderHearing(){
+  var host = document.getElementById('hearing');
+  var rows = [
+    { k: 'human', d: SCIENCE.human },
+    { k: 'cat',   d: SCIENCE.species.cat },
+    { k: 'dog',   d: SCIENCE.species.dog }
+  ];
+  var html = '';
+  rows.forEach(function(r){
+    var a = logX(r.d.hearing.low_hz), b = logX(r.d.hearing.high_hz);
+    var on = (r.k === state.species);
+    html += '<div class="hbar"><div class="lbl"><b>' + r.d.label + '</b>'
+          + '<span>' + fmtHz(r.d.hearing.low_hz) + ' – ' + fmtHz(r.d.hearing.high_hz) + '</span></div>'
+          + '<div class="track"><span class="fill" style="left:' + a.toFixed(1) + '%;width:'
+          + (b-a).toFixed(1) + '%;' + (on ? '' : 'opacity:.42') + '"></span></div></div>';
+  });
+  html += '<div class="axis">';
+  [20, 100, 1000, 10000, 100000].forEach(function(v){
+    html += '<span style="left:' + logX(v).toFixed(1) + '%">' + fmtHz(v) + '</span>';
+  });
+  html += '</div>';
+  host.innerHTML = html;
+}
+function fmtHz(v){ return v >= 1000 ? (v/1000) + ' kHz' : v + ' Hz'; }
+
+/* ---------------------------------------------------------------- 清单 */
+function renderPillars(){
+  var host = document.getElementById('pillars');
+  var html = '';
+  SCIENCE.pillars.forEach(function(p){
+    html += '<div class="pill"><h4>' + p.label + '</h4><p class="hint">' + p.hint + '</p>';
+    p.checks.forEach(function(c){
+      html += '<label' + (state.checks[c.id] ? ' class="checked"' : '') + '>'
+            + '<input type="checkbox" data-ck="' + c.id + '"' + (state.checks[c.id] ? ' checked' : '') + '>'
+            + '<span>' + c.text + '</span></label>';
+    });
+    html += '</div>';
+  });
+  host.innerHTML = html;
+  host.addEventListener('change', function(e){
+    var id = e.target.getAttribute('data-ck');
+    if (!id) return;
+    state.checks[id] = e.target.checked;
+    e.target.parentNode.classList.toggle('checked', e.target.checked);
+    updateSummary();
+  });
+  updateSummary();
+}
+function counts(){
+  var total = 0, done = 0;
+  SCIENCE.pillars.forEach(function(p){
+    p.checks.forEach(function(c){ total++; if (state.checks[c.id]) done++; });
+  });
+  return { total: total, done: done, missing: total - done };
+}
+function updateSummary(){
+  var n = counts();
+  document.getElementById('summary').innerHTML =
+    '已确认 <b>' + n.done + '</b> / ' + n.total + ' 项　·　还有 <b>' + n.missing + '</b> 项值得检查';
+  return n;
+}
+
+/* ---------------------------------------------------------------- 分享卡片 */
+document.getElementById('export').addEventListener('click', function(){
+  var n = updateSummary();
+  var W = 1080, H = 1350;
+  var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  c.fillStyle = '#f5f6f8'; c.fillRect(0,0,W,H);
+  c.fillStyle = '#ffffff'; c.fillRect(40,40,W-80,H-80);
+  c.fillStyle = '#0d7d72'; c.fillRect(40,40,W-80,8);
+  c.fillStyle = '#1b1f24'; c.font = 'bold 46px sans-serif';
+  c.fillText(SCIENCE.species[state.species].label + '眼中的你家', 80, 140);
+  c.fillStyle = '#7d8896'; c.font = '24px sans-serif';
+  c.fillText('伴侣视角 · 同一张照片，三种看法', 80, 182);
+
+  var panels = [document.getElementById('cvA'), document.getElementById('cvB'), document.getElementById('cvC')];
+  var pw = (W - 160 - 40) / 3, ph = pw * 0.68, y = 220;
+  panels.forEach(function(p, i){
+    var x = 80 + i*(pw+20), r = pw/p.width, dh = p.height*r;
+    var sc = Math.min(1, ph/dh);
+    c.drawImage(p, x, y, p.width*sc, p.height*sc);
+    c.strokeStyle = '#e4e8ed'; c.strokeRect(x, y, p.width*sc, p.height*sc);
+  });
+  c.fillStyle = '#0a5f57'; c.font = 'bold 40px sans-serif';
+  c.fillText('五大支柱自检：还有 ' + n.missing + ' 项值得检查', 80, 640);
+  c.fillStyle = '#4d5866'; c.font = '26px sans-serif';
+  var lines = [
+    '① 安全的地方　② 多个且分离的关键资源　③ 玩耍与捕猎的机会',
+    '④ 积极、一致且可预测的人猫互动　⑤ 尊重猫的嗅觉的环境',
+    '',
+    '来源：AAFP/ISFM 猫科环境需求指南（JFMS 2013;15(3):219-230）',
+    '听阈与视觉数据：Lab Anim Res 2023；VetScienceWeek',
+    '色觉为二色觉近似模拟，低视角为示意，均非物理重建。'
+  ];
+  lines.forEach(function(t, i){ c.fillText(t, 80, 700 + i*40); });
+  c.fillStyle = '#7d8896'; c.font = '22px sans-serif';
+  c.fillText('照片全程本地处理，未上传', 80, H-90);
+  var a = document.createElement('a');
+  a.download = 'companion-perspective-' + state.species + '.png';
+  a.href = cv.toDataURL('image/png');
+  a.click();
+});
+
+/* ---------------------------------------------------------------- 静态内容 */
+function renderStatic(){
+  document.getElementById('field').innerHTML =
+    '<b>视野</b>：' + (SCIENCE.species.cat.visual_field || '—');
+  document.getElementById('lowlight').innerHTML =
+    '<b>暗视觉</b>：' + (SCIENCE.species.cat.low_light || '—');
+  document.getElementById('flickerNote').textContent =
+    '此处为慢放示意——普通屏幕无法呈现 70–80 Hz 的真实频率。';
+
+  var html = '';
+  SCIENCE.claims.forEach(function(cl){
+    html += '<div class="claim"><p>' + cl.text
+          + '<span class="badge' + (cl.confidence === 'conflict' ? ' conflict' : '') + '">'
+          + (cl.confidence === 'conflict' ? '来源存在冲突' : (cl.confidence === 'high' ? '证据较强' : '证据中等'))
+          + '</span></p><p class="cv">' + cl.caveat + '</p></div>';
+  });
+  html += '<div class="srcs"><ol>';
+  SCIENCE.sources.forEach(function(s){
+    html += '<li>' + s.title + '　<a href="' + s.url + '" target="_blank" rel="noopener">'
+          + s.url + '</a>　<span style="color:#7d8896">Tier ' + s.tier + (s.date ? ' · ' + s.date : '') + '</span></li>';
+  });
+  html += '</ol></div>';
+  document.getElementById('science').innerHTML = html;
+
+  document.getElementById('disclaimers').innerHTML =
+    SCIENCE.disclaimers.map(function(t){ return '<li>' + t + '</li>'; }).join('');
+}
+
+/* ---------------------------------------------------------------- 启动 */
+renderStatic();
+renderHearing();
+renderPillars();
+if (SAMPLES.length && state._first) state._first.click();
+})();
+</script>
+</body>
+</html>
